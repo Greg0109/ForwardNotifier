@@ -8,16 +8,18 @@ It works using SSH, so it can works locally for now (although I will add more fe
 
 # IMPORTANT INFORMATION
 
+### MacOS
+
 For MacOS you need a tool called “terminal-notifier”. It’s free and there are several tutorials on how to install it. Like this one
 
 To enable ssh on a Mac, follow this tutorial
 
-——
+### Linux
 
 For Linux you need a tool called “notify-send”. It comes preinstalled on several distros (most of Ubuntu flavors have it). 
 To enable ssh on Linux, install openssh-server
 
-——
+### Windows
 
 For windows there’s a custom tool made by u/LavamasterYT (thank you so much!) that is needed in order to work. 
 
@@ -29,7 +31,7 @@ You also need OpenSSH server to be installed and working (**Please install opens
 Do not remove those .exe files, they are needed for it to work!
 You might need a reboot upon installation.**
 
-——
+### iOS
 
 On iOS you only need to have ForwardNotifier installed on both devices!
 
