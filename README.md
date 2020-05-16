@@ -6,7 +6,7 @@ Hi! This tweak forwards your notifications to your PC (Windows, Mac or Linux!) o
 
 It works using SSH, so it can works locally for now (although I will add more features in the future for it to work via open ports and use other services like PushOver).
 
-# ————— IMPORTANT INFORMATION ———————
+# IMPORTANT INFORMATION
 
 For MacOS you need a tool called “terminal-notifier”. It’s free and there are several tutorials on how to install it. Like this one
 
@@ -33,7 +33,7 @@ On iOS you only need to have ForwardNotifier installed on both devices!
 
 Notifications can be disabled when device is unlocked.
 
-# ——— Where to find user and hostname ———
+# Where to find user and hostname
 
 In MacOS and Linux:
 
@@ -47,12 +47,11 @@ Hostname can be found if you open terminal, the first line where it usually says
 
 You can also use your local ip instead of a hostname
 
-# ————— Additional Info —————
+# Additional Info
 
 In order to activate the tweak, you need to activate the CC module and make sure its enabled
 Since this tweak relies on a CC module to enable or disable it, it only supports iOS 11-13, but, I’ve tested the receiver from iOS 9-13 and it works without problems.
 Don't forget to insert your password!
 
-# —————————————————————————
 
 Other than that, there’s nothing more to it! Enjoy!
