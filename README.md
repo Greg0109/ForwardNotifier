@@ -50,7 +50,9 @@ You can also use your local ip instead of a hostname
 # Additional Info
 
 In order to activate the tweak, you need to activate the CC module and make sure its enabled
+
 Since this tweak relies on a CC module to enable or disable it, it only supports iOS 11-13, but, I’ve tested the receiver from iOS 9-13 and it works without problems.
+
 Don't forget to insert your password!
 
 
