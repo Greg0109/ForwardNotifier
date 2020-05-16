@@ -63,7 +63,7 @@ You can also use your local ip instead of a hostname
 **The default iOS password for SSH is "alpine" but you should definitely change your SSH password**
 
 # ForwardNotifier sender setup
-Steps:
+## Steps:
 
 -Once the receivers have been setup, go to the tweak settings and fill out the SSH information there. 
 
