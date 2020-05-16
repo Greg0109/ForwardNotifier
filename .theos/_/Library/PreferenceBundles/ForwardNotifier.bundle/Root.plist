@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+            <string>General Settings</string>
+			<key>footerText</key>
+			<string>This feature makes this device the one that displays the notifications from other device.&#xA;Enable this feature if you would like to receive notifications on this device.&#xA;If this setting is enabled, the other ones should be disabled.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>receiver</string>
+			<key>label</key>
+			<string>Set Device as Receiver</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>If this setting is enabled, the device won't send the notifications when is unlocked.&#xA;Disable this if you would like to receive notifications on your PC/iOS device all the time.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>lockstateenabled</string>
+			<key>label</key>
+			<string>Disable when unlocked</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Select which OS you would like the notifications to be forwarded:&#xA;- Linux requires a package called "notify-send" to be installed.&#xA;- MacOS requires a package "terminal-notifier" to be installed.&#xA;- iOS requires this tweak to be installed on the receiver device with the receiver option enabled.&#xA;- Windows requires the Windows Client Tool "ForwardNotifierReceiver" to be installed. This feature is not yet supported.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSegmentCell</string>
+			<key>default</key>
+			<integer>0</integer>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>pcspecifier</string>
+			<key>validValues</key>
+        	<array>
+				<integer>0</integer>
+				<integer>1</integer>
+				<integer>2</integer>
+				<integer>3</integer>
+			</array>
+			<key>validTitles</key>
+			<array>
+				<string>Linux</string>
+				<string>MacOS</string>
+				<string>iOS</string>
+				<string>Windows</string>
+			</array>
+			<key>alignment</key>
+			<string>0</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>SSH Settings</string>
+			<key>footerText</key>
+			<string>If you are using key authentication, make sure the key works before activating. This tweak has been tested with keys in the .pem format</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>sshenabled</string>
+			<key>label</key>
+			<string>SSH Enabled</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>keyauthentication</string>
+			<key>label</key>
+			<string>Use key authentication</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>placeholder</key>
+			<string>User</string>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>user</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>placeholder</key>
+			<string>IP or Hostaname.local</string>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>ip</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.preferencechanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSecureEditTextCell</string>
+			<key>placeholder</key>
+			<string>Password or path to Key Authentication File</string>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>password</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.preferencechanged</string>
+		</dict>
+	</array>
+	<key>title</key>
+	<string>ForwardNotifier</string>
+</dict>
+</plist>

@@ -1,0 +1,9 @@
+Package: com.greg0109.forwardnotifier
+Name: ForwardNotifier
+Depends: mobilesubstrate, sshpass, openssh
+Version: 1.2
+Architecture: iphoneos-arm
+Description: Forward Notifications to your PC!
+Maintainer: Greg0109
+Author: Greg0109
+Section: Tweaks

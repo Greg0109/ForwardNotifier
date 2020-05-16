@@ -1,0 +1,9 @@
+Package: com.greg0109.forwardnotifiercc
+Name: ForwardNotifierCC
+Depends: mobilesubstrate
+Version: 1.0
+Architecture: iphoneos-arm
+Description: CC Module for ForwardNotifier!
+Maintainer: Greg0109
+Author: Greg0109
+Section: Control Center (Modules)
