@@ -66,5 +66,11 @@ Since this tweak relies on a CC module to enable or disable it, it only supports
 
 **Don't forget to insert your password!**
 
+# Troubleshooting
+
+If the ssh fails, you will get a notification on your sender device with the title "ForwardNotifier Error". This will have the output of the error as a message. It will point you in the direction of where the error happened.
+
+If you don't get that message and the notifications are still not displayed on the receiver, then something is wrong on the receiver end.
+
 
 Other than that, there’s nothing more to it! Enjoy!
