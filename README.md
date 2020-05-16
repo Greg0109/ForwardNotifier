@@ -21,11 +21,13 @@ To enable ssh on Linux, install openssh-server
 
 For windows there’s a custom tool made by u/LavamasterYT (thank you so much!) that is needed in order to work. 
 
-You also need OpenSSH server to be installed and working (*Please install openssh from Powershell, in our testing it has proved to be more effective and it causes less errors*)
+You also need OpenSSH server to be installed and working (**Please install openssh from Powershell, in our testing it has proved to be more effective and it causes less errors**)
 
-To use the tool, you need to download both .exe files and put them in Documents/ForwardNotifier, then, open the "SetEnvironmentVariable.exe" and it will set everything up.
+[Windows Tool](https://github.com/Greg0109/ForwardNotifier/tree/master/Windows%20Client)
+
+**To use the tool, you need to download both .exe files and put them in Documents/ForwardNotifier, then, open the "SetEnvironmentVariable.exe" and it will set everything up.
 Do not remove those .exe files, they are needed for it to work!
-You might need a reboot upon installation.
+You might need a reboot upon installation.**
 
 ——
 
