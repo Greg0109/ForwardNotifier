@@ -49,13 +49,22 @@ Hostname can be found if you open terminal, the first line where it usually says
 
 You can also use your local ip instead of a hostname
 
-# Additional Info
+# ForwardNotifier sender setup
+Steps:
 
-In order to activate the tweak, you need to activate the CC module and make sure its enabled
+-Once the receivers have been setup, go to the tweak settings and fill out the SSH information there. 
+
+-**Make sure the user and hostname/ip are correct.**
+
+-Enable the necessary switches
+
+-**In order to activate the tweak, you need to activate the CC module and make sure its enabled**
+
+# Additional Information
 
 Since this tweak relies on a CC module to enable or disable it, it only supports iOS 11-13, but, I’ve tested the receiver from iOS 9-13 and it works without problems.
 
-Don't forget to insert your password!
+**Don't forget to insert your password!**
 
 
 Other than that, there’s nothing more to it! Enjoy!
