@@ -23,7 +23,9 @@ To enable ssh on Linux, install openssh-server
 
 For windows there’s a custom tool made by u/LavamasterYT (thank you so much!) that is needed in order to work. 
 
-You also need OpenSSH server to be installed and working (**Please install openssh from Powershell, in our testing it has proved to be more effective and it causes less errors**)
+You also need OpenSSH server to be installed and working (**Please install openssh from [Powershell](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse#installing-openssh-with-powershell), in our testing it has proved to be more effective and it causes less errors**)
+
+**Please, make sure the SSH service is up and running [SSH Service Configuration](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse#initial-configuration-of-ssh-server)**
 
 [Windows Tool](https://github.com/Greg0109/ForwardNotifier/tree/master/Windows%20Client)
 
