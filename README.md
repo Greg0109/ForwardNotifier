@@ -39,17 +39,28 @@ Notifications can be disabled when device is unlocked.
 
 # Where to find user and hostname
 
-In MacOS and Linux:
+### In MacOS and Linux:
 
 if you open terminal and type "users" you will get the users.
 Also if you type "hostname", you will get the hostname.
 Hostname needs a .local at the end.
 
-iOS:
+**Password on all cases are the same as your main accounts on your devices**
+
+### In Windows:
+In Windows the username is the same as your username for your account.
+
+IP can be found if you type "ipconfig" on cmd
+
+**Password on all cases are the same as your main accounts on your devices**
+
+### In iOS:
 User is "root" or "mobile"
 Hostname can be found if you open terminal, the first line where it usually says "*s-iphone"
 
 You can also use your local ip instead of a hostname
+
+**The default iOS password for SSH is "alpine" but you should definitely change your iOS password**
 
 # ForwardNotifier sender setup
 Steps:
