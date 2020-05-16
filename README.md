@@ -60,7 +60,7 @@ Hostname can be found if you open terminal, the first line where it usually says
 
 You can also use your local ip instead of a hostname
 
-**The default iOS password for SSH is "alpine" but you should definitely change your iOS password**
+**The default iOS password for SSH is "alpine" but you should definitely change your SSH password**
 
 # ForwardNotifier sender setup
 Steps:
