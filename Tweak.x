@@ -96,7 +96,7 @@ void pushnotif() {
       if (pcspecifier == 0) { // Linux
         command = [NSString stringWithFormat:@"notify-send -i applications-development \"%@\" \"%@\"",title,message];
       } else if (pcspecifier == 1) { // MacOS
-        command = [NSString stringWithFormat:@"/usr/local/bin/terminal-notifier -title \"%@\" -message \"%@\"",title,message];
+        command = [NSString stringWithFormat:@"/usr/local/bin/terminal-notifier -sound pop -title \"%@\" -message \"%@\"",title,message];
       } else if (pcspecifier == 2) { // iOS
         command = [NSString stringWithFormat:@"ForwardNotifierReceiver \"%@\" \"%@\"",title,message];
       } else if (pcspecifier == 3) { // Windows
