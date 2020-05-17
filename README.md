@@ -73,7 +73,7 @@ You can also use your local ip instead of a hostname
 
 -Enable the necessary switches
 
--**In order to activate the tweak, you need to activate the CC module and make sure its enabled**
+-**In order to activate the tweak, you need to activate the CC module and make sure its enabled. CC module can be found in the CC settings, if it's not there, you might need to install a third party CC module enabler like CCSupport**
 
 # Additional Information
 
