@@ -6,13 +6,15 @@ Hi! This tweak forwards your notifications to your PC (Windows, Mac or Linux!) o
 
 Up uptil now it only worked using SSH, but now, I am introducing the crossplatform server! A python script that creates a https server on your machine that listens to ForwardNotifier calls to display those notifications on your PC. (**Crossplatform server doesn't work on iOS devices, if you want to use an iOS device as a receiver you must use SSH. Instructions down below**).
 
+If you are a beginner, I suggest you use the Crossplatform Server, it's much more user friendly. The SSH tutorial and Crossplatform tutorial are down below.
+
 # SSH Setup for the Receiver
 
 ### MacOS
 
-For MacOS you need a tool called “terminal-notifier”. It’s free and there are several tutorials on how to install it. Like this one
+For MacOS you need a tool called “terminal-notifier”. It’s free and there are several tutorials on how to install it. Like this [one](https://brewinstall.org/install-terminal-notifier-on-mac-with-brew/)
 
-To enable ssh on a Mac, follow this tutorial
+To enable ssh on a Mac, follow this [tutorial](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwi6pbvMidzpAhURahQKHQYaBvsQFjACegQIDBAG&url=https%3A%2F%2Fosxdaily.com%2F2011%2F09%2F30%2Fremote-login-ssh-server-mac-os-x%2F&usg=AOvVaw3qUh4DI6uMFzS8KsyDa5Wm)
 
 ### Linux
 
