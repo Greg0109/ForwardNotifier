@@ -50,6 +50,14 @@
 															 handler:^(UIAlertAction * action) {}];
 				[alert addAction:defaultAction];
 				[self presentViewController:alert animated:YES completion:nil];
+		} else if ([[NSString stringWithFormat:@"%@",value] isEqual:@"1"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"methodspecifier"]) {
+				UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform Server"
+													 message:@"When using the Crossplatform Server you only need to insert the hostname or ip address. There's no need for user, password or port."
+													 preferredStyle:UIAlertControllerStyleAlert];
+				UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+															 handler:^(UIAlertAction * action) {}];
+				[alert addAction:defaultAction];
+				[self presentViewController:alert animated:YES completion:nil];
 		}
 
 		if ([[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"receiver"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"password"]) {
