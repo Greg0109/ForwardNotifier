@@ -1,51 +1,54 @@
 #line 1 "Tweak.x"
-#import <UIKit/UIKit.h>
-#include <NSTask.h>
+#import "Tweak.h"
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import <UIKit/UIControl.h>
+#import <dlfcn.h>
 
-@interface NSDistributedNotificationCenter : NSNotificationCenter
-+ (instancetype)defaultCenter;
-- (void)postNotificationName:(NSString *)name object:(NSString *)object userInfo:(NSDictionary *)userInfo;
-@end
-
-@interface JBBulletinManager : NSObject
-  +(id)sharedInstance;
-  -(id)showBulletinWithTitle:(NSString *)title message:(NSString *)message bundleID:(NSString *)bundleID;
-  -(id)showBulletinWithTitle:(NSString *)title message:(NSString *)message bundleID:(NSString *)bundleID hasSound:(BOOL)hasSound soundID:(int)soundID vibrateMode:(int)vibrate soundPath:(NSString *)soundPath attachmentImage:(UIImage *)attachmentImage overrideBundleImage:(UIImage *)overrideBundleImage;
-@end
-
-@interface SpringBoard
--(void)applicationDidFinishLaunching:(id)arg1 ;
-@end
-
-@class BBContent;
-@interface BBContent : NSObject
-@property (nonatomic,retain) NSString * message;
-@property (nonatomic,retain) NSString * title;
-@end
-
-@interface BBBulletin : NSObject
-@property (nonatomic,retain) NSString * sectionID;
-@property (nonatomic,retain) NSString * sectionDisplayName;
-@property (nonatomic,retain) BBContent * content;
-@end
-
-@interface BBServer
--(void)publishBulletin:(id)arg1 destinations:(unsigned long long)arg2 ;
-@end
-
-@interface SBLockStateAggregator : NSObject
-+(id)sharedInstance;
--(unsigned long long)lockState;
-@end
 
 BOOL receiver;
+BOOL errorlog;
 BOOL lockstateenabled;
+int pcspecifier;
+
+
+BOOL curl;
+NSString *os;
+
+
 BOOL sshenabled;
+BOOL keyauthentication;
 NSString *user;
 NSString *ip;
+NSString *port;
 NSString *password;
-int pcspecifier;
+NSString *command;
+NSArray *arguments;
+
+
+NSString *pc;
+NSString *title;
+NSString *message;
+
+
+NSPipe *out;
+static BBServer *notificationserver = nil;
+
+static dispatch_queue_t getBBServerQueue() {
+    static dispatch_queue_t queue;
+    static dispatch_once_t predicate;
+    dispatch_once(&predicate, ^{
+        void *handle = dlopen(NULL, RTLD_GLOBAL);
+        if (handle) {
+            dispatch_queue_t __weak *pointer = (__weak dispatch_queue_t *) dlsym(handle, "__BBServerQueue");
+            if (pointer) {
+                queue = *pointer;
+            }
+            dlclose(handle);
+        }
+    });
+    return queue;
+}
 
 
 #include <substrate.h>
@@ -68,50 +71,151 @@ int pcspecifier;
 #define _LOGOS_RETURN_RETAINED
 #endif
 
-@class SpringBoard; @class SBLockStateAggregator; @class BBServer; 
+@class SpringBoard; @class BBAction; @class SBLockStateAggregator; @class BBServer; @class BBBulletin; 
 
-static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$SBLockStateAggregator(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("SBLockStateAggregator"); } return _klass; }
-#line 49 "Tweak.x"
+static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBBulletin(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBBulletin"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBAction(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBAction"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$SBLockStateAggregator(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("SBLockStateAggregator"); } return _klass; }
+#line 52 "Tweak.x"
+static BBServer* (*_logos_orig$server$BBServer$initWithQueue$)(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id) _LOGOS_RETURN_RETAINED; static BBServer* _logos_method$server$BBServer$initWithQueue$(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id) _LOGOS_RETURN_RETAINED; static BBServer* (*_logos_orig$server$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$)(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id, id, id, id, id, id, id, id, id) _LOGOS_RETURN_RETAINED; static BBServer* _logos_method$server$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id, id, id, id, id, id, id, id, id) _LOGOS_RETURN_RETAINED; static void (*_logos_orig$server$BBServer$dealloc)(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL); static void _logos_method$server$BBServer$dealloc(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL); 
+
+static BBServer* _logos_method$server$BBServer$initWithQueue$(_LOGOS_SELF_TYPE_INIT BBServer* __unused self, SEL __unused _cmd, id arg1) _LOGOS_RETURN_RETAINED {
+    notificationserver = _logos_orig$server$BBServer$initWithQueue$(self, _cmd, arg1);
+    return notificationserver;
+}
+static BBServer* _logos_method$server$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$(_LOGOS_SELF_TYPE_INIT BBServer* __unused self, SEL __unused _cmd, id arg1, id arg2, id arg3, id arg4, id arg5, id arg6, id arg7, id arg8, id arg9) _LOGOS_RETURN_RETAINED {
+    notificationserver = _logos_orig$server$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$(self, _cmd, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    return notificationserver;
+}
+static void _logos_method$server$BBServer$dealloc(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd) {
+  if (notificationserver == self) {
+    notificationserver = nil;
+  }
+  _logos_orig$server$BBServer$dealloc(self, _cmd);
+}
+
+
+
+void testnotif(NSString *titletest, NSString *messagetest) {
+  BBBulletin *bulletin = [[_logos_static_class_lookup$BBBulletin() alloc] init];
+
+  bulletin.title = titletest;
+  bulletin.message = messagetest;
+  bulletin.sectionID = @"com.apple.Preferences";   
+  bulletin.bulletinID = [[NSProcessInfo processInfo] globallyUniqueString];
+  bulletin.recordID = [[NSProcessInfo processInfo] globallyUniqueString];
+  bulletin.publisherBulletinID = [[NSProcessInfo processInfo] globallyUniqueString];
+  bulletin.date = [NSDate date];
+  bulletin.defaultAction = [_logos_static_class_lookup$BBAction() actionWithLaunchBundleID:@"com.apple.Preferences" callblock:nil];
+  dispatch_sync(getBBServerQueue(), ^{
+    [notificationserver publishBulletin:bulletin destinations:14];
+  });
+}
+
+BOOL isItLocked() {
+  BOOL locked;
+  if (lockstateenabled) {
+    locked = [[_logos_static_class_lookup$SBLockStateAggregator() sharedInstance] lockState];
+  } else {
+    locked = TRUE;
+  }
+  return locked;
+}
+
+void pushnotif() {
+  BOOL locked = isItLocked();
+  if (sshenabled) {
+      if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-Status"] isEqual:@"1"] && (locked)) {
+      dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
+      dispatch_async(sendnotif, ^{
+        pc = [NSString stringWithFormat:@"%@@%@",user,ip];
+        if (pcspecifier == 0) { 
+          command = [NSString stringWithFormat:@"notify-send -i applications-development \"%@\" \"%@\"",title,message];
+        } else if (pcspecifier == 1) { 
+          command = [NSString stringWithFormat:@"/usr/local/bin/terminal-notifier -sound pop -title \"%@\" -message \"%@\"",title,message];
+        } else if (pcspecifier == 2) { 
+          command = [NSString stringWithFormat:@"ForwardNotifierReceiver \"%@\" \"%@\"",title,message];
+        } else if (pcspecifier == 3) { 
+          command = [NSString stringWithFormat:@"ForwardNotifierReceiver -title \"%@\" -message \"%@\"",title,message];
+        }
+        if (keyauthentication) {
+          if ([port isEqual:@"22"]) {
+            arguments = @[@"-i",password,pc,command];
+          } else {
+            arguments = @[@"-i",password,pc,@"-p",port,command];
+          }
+          NSTask *task = [[NSTask alloc] init];
+          [task setLaunchPath:@"/usr/bin/ssh"];
+          [task setArguments:arguments];
+          out = [NSPipe pipe];
+          [task setStandardError:out];
+          [task launch];
+          [task waitUntilExit];
+        } else {
+          if ([port isEqual:@"22"]) {
+            arguments = @[@"-p",password,@"ssh",@"-o",@"StrictHostKeyChecking=no",pc,command];
+          } else {
+            arguments = @[@"-p",password,@"ssh",@"-o",@"StrictHostKeyChecking=no",pc,@"-p",port,command];
+          }
+          NSTask *task = [[NSTask alloc] init];
+          [task setLaunchPath:@"/usr/bin/sshpass"];
+          [task setArguments:arguments];
+          out = [NSPipe pipe];
+          [task setStandardError:out];
+          [task launch];
+          [task waitUntilExit];
+        }
+        NSFileHandle * read = [out fileHandleForReading];
+        NSData * dataRead = [read readDataToEndOfFile];
+        NSString *erroroutput = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
+        if ([erroroutput length] > 2 && errorlog) {
+          testnotif(@"ForwardNotifier Error",erroroutput);
+        }
+      });
+    }
+  } else if (curl) {
+    if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-Status"] isEqual:@"1"] && (locked)) {
+      dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
+      dispatch_async(sendnotif, ^{
+        title = [title stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
+        message = [message stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
+        if (pcspecifier == 0) { 
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\"}",title,message];
+        } else if (pcspecifier == 1) { 
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"MacOS\"}",title,message];
+        } else if (pcspecifier == 2) { 
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"iOS\"}",title,message];
+        } else if (pcspecifier == 3) { 
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Windows\"}",title,message];
+        }
+        NSTask *task = [[NSTask alloc] init];
+        [task setLaunchPath:@"/usr/bin/curl"];
+        [task setArguments:@[[NSString stringWithFormat:@"%@:8000",ip],@"-d",command ]];
+        out = [NSPipe pipe];
+        [task setStandardError:out];
+        [task launch];
+        [task waitUntilExit];
+        NSFileHandle * read = [out fileHandleForReading];
+        NSData * dataRead = [read readDataToEndOfFile];
+        NSString *erroroutput = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
+        if ([erroroutput length] > 2 && errorlog) {
+          testnotif(@"ForwardNotifier Error",erroroutput);
+        }
+      });
+    }
+  }
+}
+
 static void (*_logos_orig$ssh$BBServer$publishBulletin$destinations$)(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL, BBBulletin *, unsigned long long); static void _logos_method$ssh$BBServer$publishBulletin$destinations$(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL, BBBulletin *, unsigned long long); 
 
 static void _logos_method$ssh$BBServer$publishBulletin$destinations$(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, BBBulletin * arg1, unsigned long long arg2) {
   _logos_orig$ssh$BBServer$publishBulletin$destinations$(self, _cmd, arg1, arg2);
-  BOOL isItLocked;
-  if (lockstateenabled) {
-    isItLocked = [[_logos_static_class_lookup$SBLockStateAggregator() sharedInstance] lockState];
-  } else {
-    isItLocked = TRUE;
+  title = arg1.content.title;
+  message = arg1.content.message;
+  if ([title length] == 0) {
+    NSArray *name = [arg1.sectionID componentsSeparatedByString:@"."];
+    title = [NSString stringWithFormat:@"%@",[name lastObject]];
   }
-  if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-Status"] isEqual:@"1"] && (isItLocked)) {
-    dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
-    dispatch_async(sendnotif, ^{
-      NSString *title = arg1.content.title;
-      NSString *message = arg1.content.message;
-      NSString *pc = [NSString stringWithFormat:@"%@@%@",user,ip];
-      if ([title length] == 0) {
-        NSArray *name = [arg1.sectionID componentsSeparatedByString:@"."];
-        title = [NSString stringWithFormat:@"%@",[name lastObject]];
-      }
-      if (pcspecifier == 0) { 
-        NSString *command = [NSString stringWithFormat:@"notify-send \"%@\" \"%@\"",title,message];
-        NSTask *task = [[NSTask alloc] init];
-        [task setLaunchPath:@"/usr/bin/sshpass"];
-        [task setArguments:@[@"-p",password,@"ssh",@"-o",@"StrictHostKeyChecking=no",pc,command]];
-        [task launch];
-      } else if (pcspecifier == 1) { 
-        NSString *command = [NSString stringWithFormat:@"/usr/local/bin/terminal-notifier -title \"%@\" -message \"%@\"",title,message];
-        NSTask *task = [[NSTask alloc] init];
-        [task setLaunchPath:@"/usr/bin/sshpass"];
-        [task setArguments:@[@"-p",password,@"ssh",@"-o",@"StrictHostKeyChecking=no",pc,command]];
-        [task launch];
-      } else if (pcspecifier == 2) { 
-        NSString *command = [NSString stringWithFormat:@"ForwardNotifierReceiver \"%@\" \"%@\"",title,message];
-        NSTask *task = [[NSTask alloc] init];
-        [task setLaunchPath:@"/usr/bin/sshpass"];
-        [task setArguments:@[@"-p",password,@"ssh",@"-o",@"StrictHostKeyChecking=no",pc,command]];
-        [task launch];
-      }
-    });
+  if (![title isEqualToString:@"ForwardNotifier Error"]) {
+    pushnotif();
   }
 }
 
@@ -121,30 +225,37 @@ static void (*_logos_orig$devicereceiver$SpringBoard$applicationDidFinishLaunchi
 
 static void _logos_method$devicereceiver$SpringBoard$applicationDidFinishLaunching$(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, id arg1) {
   [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/notification" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
-      NSString *title = notification.userInfo[@"title"];
-      NSString *message = notification.userInfo[@"message"];
-
-      [[objc_getClass("JBBulletinManager") sharedInstance] showBulletinWithTitle:title message:message bundleID:@"com.apple.Preferences"];
+      NSString *titlenotif = notification.userInfo[@"title"];
+      NSString *messagenotif = notification.userInfo[@"message"];
+      testnotif(titlenotif,messagenotif);
   }];
   _logos_orig$devicereceiver$SpringBoard$applicationDidFinishLaunching$(self, _cmd, arg1);
 }
 
 
 
-static __attribute__((constructor)) void _logosLocalCtor_127d3fb7(int __unused argc, char __unused **argv, char __unused **envp) {
+static __attribute__((constructor)) void _logosLocalCtor_fee76c83(int __unused argc, char __unused **argv, char __unused **envp) {
   NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.greg0109.forwardnotifierprefs.plist"];
   receiver = prefs[@"receiver"] ? [prefs[@"receiver"] boolValue] : NO;
+  errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : YES;
   lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
   pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
+  curl = prefs[@"curl"] ? [prefs[@"curl"] boolValue] : YES;
 
   sshenabled = prefs[@"sshenabled"] ? [prefs[@"sshenabled"] boolValue] : YES;
+  keyauthentication = prefs[@"keyauthentication"] ? [prefs[@"keyauthentication"] boolValue] : NO;
   user = prefs[@"user"] && !([prefs[@"user"] isEqualToString:@""]) ? [prefs[@"user"] stringValue] : @"user";
   ip = prefs[@"ip"] && !([prefs[@"ip"] isEqualToString:@""]) ? [prefs[@"ip"] stringValue] : @"ip";
+  port = prefs[@"port"] && !([prefs[@"port"] isEqualToString:@""]) ? [prefs[@"port"] stringValue] : @"22";
   password = prefs[@"password"] && !([prefs[@"password"] isEqualToString:@""]) ? [prefs[@"password"] stringValue] : @"password";
-  if (receiver) {
+  user = [user stringByReplacingOccurrencesOfString:@" " withString:@""];
+  ip = [ip stringByReplacingOccurrencesOfString:@" " withString:@""];
+  password = [password stringByReplacingOccurrencesOfString:@" " withString:@""];
+
+  {Class _logos_class$server$BBServer = objc_getClass("BBServer"); MSHookMessageEx(_logos_class$server$BBServer, @selector(initWithQueue:), (IMP)&_logos_method$server$BBServer$initWithQueue$, (IMP*)&_logos_orig$server$BBServer$initWithQueue$);MSHookMessageEx(_logos_class$server$BBServer, @selector(initWithQueue:dataProviderManager:syncService:dismissalSyncCache:observerListener:utilitiesListener:conduitListener:systemStateListener:settingsListener:), (IMP)&_logos_method$server$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$, (IMP*)&_logos_orig$server$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$);MSHookMessageEx(_logos_class$server$BBServer, sel_registerName("dealloc"), (IMP)&_logos_method$server$BBServer$dealloc, (IMP*)&_logos_orig$server$BBServer$dealloc);} if (receiver) {
     {Class _logos_class$devicereceiver$SpringBoard = objc_getClass("SpringBoard"); MSHookMessageEx(_logos_class$devicereceiver$SpringBoard, @selector(applicationDidFinishLaunching:), (IMP)&_logos_method$devicereceiver$SpringBoard$applicationDidFinishLaunching$, (IMP*)&_logos_orig$devicereceiver$SpringBoard$applicationDidFinishLaunching$);}
   }
-  if (sshenabled) {
+  if (sshenabled || curl) {
 
 
 

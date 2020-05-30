@@ -9,6 +9,10 @@
   /home/glith/theos/vendor/include/Preferences/PSViewController.h \
   /home/glith/theos/vendor/include/Preferences/PSSpecifier.h \
   /home/glith/theos/vendor/include/Preferences/PSTableCell.h \
+  /home/glith/theos/include/AppList/AppList.h \
+  /home/glith/theos/include/AppList/ALApplicationList.h \
+  /home/glith/theos/include/AppList/ALApplicationTableDataSource.h \
+  /home/glith/theos/include/AppList/ALValueCell.h \
   /home/glith/theos/include/NSTask.h
 
 /home/glith/theos/Prefix.pch:
@@ -30,5 +34,13 @@ FNPRootListController.h:
 /home/glith/theos/vendor/include/Preferences/PSSpecifier.h:
 
 /home/glith/theos/vendor/include/Preferences/PSTableCell.h:
+
+/home/glith/theos/include/AppList/AppList.h:
+
+/home/glith/theos/include/AppList/ALApplicationList.h:
+
+/home/glith/theos/include/AppList/ALApplicationTableDataSource.h:
+
+/home/glith/theos/include/AppList/ALValueCell.h:
 
 /home/glith/theos/include/NSTask.h:

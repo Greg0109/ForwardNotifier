@@ -23,6 +23,34 @@
 			<string>receiver</string>
 			<key>label</key>
 			<string>Set Device as Receiver</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Apps selected in the blacklisted section won't get their notifications forwarded.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>bundle</key>
+			<string>AppList</string>
+			<key>isController</key>
+			<string>1</string>
+			<key>label</key>
+			<string>Blacklisted Apps</string>
+			<key>ALAllowsSelection</key>
+			<string>1</string>
+			<key>ALSettingsKeyPrefix</key>
+			<string></string>
+			<key>ALSettingsDefaultValue</key>
+			<string>0</string>
+			<key>ALSettingsPath</key>
+			<string>/var/mobile/Library/Preferences/com.greg0109.forwardnotifierblacklist</string>
+			<key>ALSingleEnabledMode</key>
+			<false/>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -38,9 +66,25 @@
 			<key>defaults</key>
 			<string>com.greg0109.forwardnotifierprefs</string>
 			<key>key</key>
+			<string>errorlog</string>
+			<key>label</key>
+			<string>Post a notification if something went wrong</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
 			<string>lockstateenabled</string>
 			<key>label</key>
 			<string>Disable when unlocked</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -73,6 +117,8 @@
 			</array>
 			<key>alignment</key>
 			<string>0</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -82,21 +128,33 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>SSH Settings</string>
+			<string>Notifier Settings</string>
 			<key>footerText</key>
 			<string>If you are using key authentication, make sure the key works before activating. This tweak has been tested with keys in the .pem format</string>
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
+			<string>PSSegmentCell</string>
 			<key>default</key>
-			<true/>
+			<integer>0</integer>
 			<key>defaults</key>
 			<string>com.greg0109.forwardnotifierprefs</string>
 			<key>key</key>
-			<string>sshenabled</string>
-			<key>label</key>
-			<string>SSH Enabled</string>
+			<string>methodspecifier</string>
+			<key>validValues</key>
+        	<array>
+				<integer>0</integer>
+				<integer>1</integer>
+			</array>
+			<key>validTitles</key>
+			<array>
+				<string>SSH</string>
+				<string>Crossplatform Server</string>
+			</array>
+			<key>alignment</key>
+			<string>0</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -109,6 +167,8 @@
 			<string>keyauthentication</string>
 			<key>label</key>
 			<string>Use key authentication</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -120,7 +180,7 @@
 			<key>key</key>
 			<string>user</string>
 			<key>PostNotification</key>
-			<string>com.greg0109.forwardnotifierprefs.preferencechanged</string>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -132,7 +192,19 @@
 			<key>key</key>
 			<string>ip</string>
 			<key>PostNotification</key>
-			<string>com.greg0109.forwardnotifierprefs.preferencechanged</string>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>placeholder</key>
+			<string>Port. Leave empty if its default (22)</string>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>port</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -144,8 +216,22 @@
 			<key>key</key>
 			<string>password</string>
 			<key>PostNotification</key>
-			<string>com.greg0109.forwardnotifierprefs.preferencechanged</string>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>This will send a test notification to the PC/iOS Device.&#xA;</string>
+		</dict>
+		<dict>
+            <key>action</key>
+            <string>testnotif</string>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Test Notification</string>
+        </dict>
 	</array>
 	<key>title</key>
 	<string>ForwardNotifier</string>

@@ -4,9 +4,11 @@ Forward your notifications from your iOS device to your PC/iOS device!
 
 Hi! This tweak forwards your notifications to your PC (Windows, Mac or Linux!) or iOS device (tested on iOS 9-13 for the receiver part)
 
+Up uptil now it only worked using SSH, but now, I am introducing the crossplatform server! A python script that creates a https server on your machine that listens to ForwardNotifier calls to display those notifications on your PC. (**Crossplatform server doesn't work on iOS devices, if you want to use an iOS device as a receiver you must use SSH. Instructions down below**).
+
 It works using SSH, so it can works locally for now (although I will add more features in the future for it to work via open ports and use other services like PushOver).
 
-# IMPORTANT INFORMATION
+# SSH Setup for the Receiver
 
 ### MacOS
 
@@ -16,18 +18,16 @@ To enable ssh on a Mac, follow this tutorial
 
 ### Linux
 
-For Linux you need a tool called “notify-send”. It comes preinstalled on several distros (most of Ubuntu flavors have it). 
+For Linux you need a tool called “notify-send”. It comes preinstalled on several distros (most of Ubuntu flavors have it).
 To enable ssh on Linux, install openssh-server
 
 ### Windows
 
-For windows there’s a custom tool made by u/LavamasterYT (thank you so much!) that is needed in order to work. 
+For windows there’s a custom [tool](https://github.com/Greg0109/ForwardNotifier/tree/master/Windows%20Client)
 
 You also need OpenSSH server to be installed and working (**Please install openssh from [Powershell](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse#installing-openssh-with-powershell), in our testing it has proved to be more effective and it causes less errors**)
 
 **Please, make sure the SSH service is up and running [SSH Service Configuration](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse#initial-configuration-of-ssh-server)**
-
-[Windows Tool](https://github.com/Greg0109/ForwardNotifier/tree/master/Windows%20Client)
 
 **To use the tool, you need to download both .exe files and put them in Documents/ForwardNotifier, then, open the "SetEnvironmentVariable.exe" and it will set everything up.
 Do not remove those .exe files, they are needed for it to work!
@@ -38,6 +38,16 @@ You might need a reboot upon installation.**
 On iOS you only need to have ForwardNotifier installed on both devices!
 
 Notifications can be disabled when device is unlocked.
+
+# Crossplatform Server Setup for the Receiver
+
+To install the crossplatform server, you only need to install the provided Autoinstall packages. These installers will check and install all necessary dependencies for this program to work. Follow the instructions for each specific OS down below:
+
+[MacOS](Insert link here). Place the script anywhere you want on your Mac and launch it on terminal, like so "./ForwardNotifierInstaller" (Do not use sudo).
+[Windows](Insert link here). Execute it as administrator as you would any other program
+[Linux](Inster link here). Place the script anywhere you want on your Linux machine and launch it on terminal, like so "sudo ./ForwardNotifierInstaller" (please, use sudo).
+
+If there's a "permissions error" while trying to use the MacOS or Linux tool, give the script permissions by using "chmod +x ForwardNotifierInstaller" in terminal on the same directory as the script.
 
 # Where to find user and hostname
 
@@ -67,9 +77,9 @@ You can also use your local ip instead of a hostname
 # ForwardNotifier sender setup
 ## Steps:
 
--Once the receivers have been setup, go to the tweak settings and fill out the SSH information there. 
+-Once the receivers have been setup, go to the tweak settings and fill out the SSH information there.
 
--**Make sure the user and hostname/ip are correct.**
+-**Make sure the user and hostname/ip are correct. Keep in mind that the crossplatform server only requires the hostname information**
 
 -Enable the necessary switches
 
@@ -91,3 +101,10 @@ If you don't get that message and the notifications are still not displayed on t
 
 
 Other than that, there’s nothing more to it! Enjoy!
+
+# Special thanks!
+
+Thanks [u/LavamasterYT](https://www.reddit.com/u/LavamasterYT/?utm_source=share&utm_medium=ios_app&utm_name=iossmf) for making the SSH Windows Tool and the Windows Installation Package for the Crossplatform Server
+
+
+Thanks to [u/tokilokit](https://www.reddit.com/u/tokilokit/?utm_source=share&utm_medium=ios_app&utm_name=iossmf) for the idea and development of the python script used for the Crossplatform server. His [GitHub](https://github.com/tokfrans03).

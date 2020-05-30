@@ -6,25 +6,47 @@
 
 //Settings
 BOOL receiver;
+BOOL errorlog;
 BOOL lockstateenabled;
 int pcspecifier;
 
-//Settings SSH
-BOOL sshenabled;
+//Settings
+int methodspecifier;
 BOOL keyauthentication;
 NSString *user;
 NSString *ip;
+NSString *port;
 NSString *password;
 NSString *command;
+NSArray *arguments;
 
 //Notifications
 NSString *pc;
 NSString *title;
 NSString *message;
+BOOL locked;
 
 //For the error output
 NSPipe *out;
 static BBServer *notificationserver = nil;
+
+static void loadPrefs() {
+  NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.greg0109.forwardnotifierprefs.plist"];
+  receiver = prefs[@"receiver"] ? [prefs[@"receiver"] boolValue] : NO;
+  errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : YES;
+  lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
+  pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
+
+  methodspecifier = prefs[@"methodspecifier"] ? [prefs[@"methodspecifier"] intValue] : 0;
+  keyauthentication = prefs[@"keyauthentication"] ? [prefs[@"keyauthentication"] boolValue] : NO;
+  user = prefs[@"user"] && !([prefs[@"user"] isEqualToString:@""]) ? [prefs[@"user"] stringValue] : @"user";
+  ip = prefs[@"ip"] && !([prefs[@"ip"] isEqualToString:@""]) ? [prefs[@"ip"] stringValue] : @"ip";
+  port = prefs[@"port"] && !([prefs[@"port"] isEqualToString:@""]) ? [prefs[@"port"] stringValue] : @"22";
+  password = prefs[@"password"] && !([prefs[@"password"] isEqualToString:@""]) ? [prefs[@"password"] stringValue] : @"password";
+  user = [user stringByReplacingOccurrencesOfString:@" " withString:@""];
+  ip = [ip stringByReplacingOccurrencesOfString:@" " withString:@""];
+  password = [password stringByReplacingOccurrencesOfString:@" " withString:@""];
+}
 
 static dispatch_queue_t getBBServerQueue() {
     static dispatch_queue_t queue;
@@ -66,7 +88,7 @@ void testnotif(NSString *titletest, NSString *messagetest) {
 
   bulletin.title = titletest;
   bulletin.message = messagetest;
-  bulletin.sectionID = @"com.apple.Preferences";   
+  bulletin.sectionID = @"com.apple.Preferences";
   bulletin.bulletinID = [[NSProcessInfo processInfo] globallyUniqueString];
   bulletin.recordID = [[NSProcessInfo processInfo] globallyUniqueString];
   bulletin.publisherBulletinID = [[NSProcessInfo processInfo] globallyUniqueString];
@@ -78,7 +100,6 @@ void testnotif(NSString *titletest, NSString *messagetest) {
 }
 
 BOOL isItLocked() {
-  BOOL locked;
   if (lockstateenabled) {
     locked = [[%c(SBLockStateAggregator) sharedInstance] lockState];
   } else {
@@ -87,45 +108,91 @@ BOOL isItLocked() {
   return locked;
 }
 
-void pushnotif() {
-  BOOL locked = isItLocked();
-  if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-Status"] isEqual:@"1"] && (locked)) {
-    dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
-    dispatch_async(sendnotif, ^{
-      pc = [NSString stringWithFormat:@"%@@%@",user,ip];
-      if (pcspecifier == 0) { // Linux
-        command = [NSString stringWithFormat:@"notify-send -i applications-development \"%@\" \"%@\"",title,message];
-      } else if (pcspecifier == 1) { // MacOS
-        command = [NSString stringWithFormat:@"/usr/local/bin/terminal-notifier -sound pop -title \"%@\" -message \"%@\"",title,message];
-      } else if (pcspecifier == 2) { // iOS
-        command = [NSString stringWithFormat:@"ForwardNotifierReceiver \"%@\" \"%@\"",title,message];
-      } else if (pcspecifier == 3) { // Windows
-        command = [NSString stringWithFormat:@"ForwardNotifierReceiver -title \"%@\" -message \"%@\"",title,message];
-      }
-      if (keyauthentication) {
+void pushnotif(BOOL override) {
+  if (!override) {
+    isItLocked();
+  } else {
+    locked = TRUE;
+  }
+  if (methodspecifier == 0) { // SSH
+      if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-Status"] isEqual:@"1"] && (locked)) {
+      dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
+      dispatch_async(sendnotif, ^{
+        pc = [NSString stringWithFormat:@"%@@%@",user,ip];
+        if (pcspecifier == 0) { // Linux
+          command = [NSString stringWithFormat:@"notify-send -i applications-development \"%@\" \"%@\"",title,message];
+        } else if (pcspecifier == 1) { // MacOS
+          command = [NSString stringWithFormat:@"/usr/local/bin/terminal-notifier -sound pop -title \"%@\" -message \"%@\"",title,message];
+        } else if (pcspecifier == 2) { // iOS
+          command = [NSString stringWithFormat:@"ForwardNotifierReceiver \"%@\" \"%@\"",title,message];
+        } else if (pcspecifier == 3) { // Windows
+          command = [NSString stringWithFormat:@"ForwardNotifierReceiver -title \"%@\" -message \"%@\"",title,message];
+        }
+        if (keyauthentication) {
+          if ([port isEqual:@"22"]) {
+            arguments = @[@"-i",password,pc,command];
+          } else {
+            arguments = @[@"-i",password,pc,@"-p",port,command];
+          }
+          NSTask *task = [[NSTask alloc] init];
+          [task setLaunchPath:@"/usr/bin/ssh"];
+          [task setArguments:arguments];
+          out = [NSPipe pipe];
+          [task setStandardError:out];
+          [task launch];
+          [task waitUntilExit];
+        } else {
+          if ([port isEqual:@"22"]) {
+            arguments = @[@"-p",password,@"ssh",@"-o",@"StrictHostKeyChecking=no",pc,command];
+          } else {
+            arguments = @[@"-p",password,@"ssh",@"-o",@"StrictHostKeyChecking=no",pc,@"-p",port,command];
+          }
+          NSTask *task = [[NSTask alloc] init];
+          [task setLaunchPath:@"/usr/bin/sshpass"];
+          [task setArguments:arguments];
+          out = [NSPipe pipe];
+          [task setStandardError:out];
+          [task launch];
+          [task waitUntilExit];
+        }
+        NSFileHandle * read = [out fileHandleForReading];
+        NSData * dataRead = [read readDataToEndOfFile];
+        NSString *erroroutput = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
+        if ([erroroutput length] > 2 && errorlog) {
+          testnotif(@"ForwardNotifier Error",erroroutput);
+        }
+      });
+    }
+  } else if (methodspecifier == 1) { // Crossplatform Server
+    if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-Status"] isEqual:@"1"] && (locked)) {
+      dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
+      dispatch_async(sendnotif, ^{
+        title = [title stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
+        message = [message stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
+        if (pcspecifier == 0) { // Linux
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\"}",title,message];
+        } else if (pcspecifier == 1) { // MacOS
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"MacOS\"}",title,message];
+        } else if (pcspecifier == 2) { // iOS
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"iOS\"}",title,message];
+        } else if (pcspecifier == 3) { // Windows
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Windows\"}",title,message];
+        }
         NSTask *task = [[NSTask alloc] init];
-        [task setLaunchPath:@"/usr/bin/ssh"];
-        [task setArguments:@[@"-i",password,pc,command]];
+        [task setLaunchPath:@"/usr/bin/curl"];
+        [task setArguments:@[[NSString stringWithFormat:@"%@:8000",ip],@"-d",command ]];
         out = [NSPipe pipe];
         [task setStandardError:out];
         [task launch];
         [task waitUntilExit];
-      } else {
-        NSTask *task = [[NSTask alloc] init];
-        [task setLaunchPath:@"/usr/bin/sshpass"];
-        [task setArguments:@[@"-p",password,@"ssh",@"-o",@"StrictHostKeyChecking=no",pc,command]];
-        out = [NSPipe pipe];
-        [task setStandardError:out];
-        [task launch];
-        [task waitUntilExit];
-      }
-      NSFileHandle * read = [out fileHandleForReading];
-      NSData * dataRead = [read readDataToEndOfFile];
-      NSString *erroroutput = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
-      if ([erroroutput length] > 2) {
-        testnotif(@"ForwardNotifier Error",erroroutput);
-      }
-    });
+        NSFileHandle * read = [out fileHandleForReading];
+        NSData * dataRead = [read readDataToEndOfFile];
+        NSString *erroroutput = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
+        if ([erroroutput length] > 2 && errorlog) {
+          testnotif(@"ForwardNotifier Error",erroroutput);
+        }
+      });
+    }
   }
 }
 
@@ -139,9 +206,31 @@ void pushnotif() {
     NSArray *name = [arg1.sectionID componentsSeparatedByString:@"."];
     title = [NSString stringWithFormat:@"%@",[name lastObject]];
   }
-  if (![title isEqualToString:@"ForwardNotifier Error"]) {
-    pushnotif();
+  if (![title containsString:@"ForwardNotifier"] && [arg1.date timeIntervalSinceNow] > -2) { //This helps avoid the notifications to get forwarded again after a respring, which makes them avoid respring loops. If notifications are 2 seconds old, then won't get forwarded.
+    NSMutableDictionary *applist = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.greg0109.forwardnotifierblacklist"];
+  	if (![applist valueForKey:arg1.sectionID] || [[NSString stringWithFormat:@"%@",[applist valueForKey:arg1.sectionID]] isEqual:@"0"]) {
+      pushnotif(FALSE);
+    }
+  } else if ([title isEqualToString:@"ForwardNotifier Test"]) {
+    pushnotif(TRUE);
   }
+}
+%end
+
+%hook SpringBoard
+-(void)applicationDidFinishLaunching:(id)arg1 {
+  [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/activate" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
+      [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-Status"];
+  }];
+  [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/deactivate" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
+      [[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"ForwardNotifier-Status"];
+  }];
+  [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/testnotification" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
+      title = @"ForwardNotifier Test";
+      message = @"This is a test notification";
+      testnotif(title,message);
+  }];
+  %orig;
 }
 %end
 %end
@@ -160,24 +249,14 @@ void pushnotif() {
 %end
 
 %ctor {
-  NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.greg0109.forwardnotifierprefs.plist"];
-  receiver = prefs[@"receiver"] ? [prefs[@"receiver"] boolValue] : NO;
-  lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
-  pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
-
-  sshenabled = prefs[@"sshenabled"] ? [prefs[@"sshenabled"] boolValue] : YES;
-  keyauthentication = prefs[@"keyauthentication"] ? [prefs[@"keyauthentication"] boolValue] : NO;
-  user = prefs[@"user"] && !([prefs[@"user"] isEqualToString:@""]) ? [prefs[@"user"] stringValue] : @"user";
-  ip = prefs[@"ip"] && !([prefs[@"ip"] isEqualToString:@""]) ? [prefs[@"ip"] stringValue] : @"ip";
-  password = prefs[@"password"] && !([prefs[@"password"] isEqualToString:@""]) ? [prefs[@"password"] stringValue] : @"password";
-  user = [user stringByReplacingOccurrencesOfString:@" " withString:@""];
-  ip = [ip stringByReplacingOccurrencesOfString:@" " withString:@""];
-  password = [password stringByReplacingOccurrencesOfString:@" " withString:@""];
+  loadPrefs();
+  CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)loadPrefs, CFSTR("com.greg0109.forwardnotifierprefs.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
   %init(server)
   if (receiver) {
     %init(devicereceiver);
-  }
-  if (sshenabled) {
+  } else {
     %init(ssh)
   }
 }
+
+///var/mobile/Library/Preferences/com.greg0109.forwardnotifierblacklist
