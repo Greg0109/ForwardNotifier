@@ -16,15 +16,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    //UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Respring" style:UIBarButtonItemStylePlain target:self action:@selector(killall)];
-    //self.navigationItem.rightBarButtonItem = button;
 }
-/*- (void)killall {
-    NSTask *killallSpringBoard = [[NSTask alloc] init];
-    [killallSpringBoard setLaunchPath:@"/usr/bin/killall"];
-    [killallSpringBoard setArguments:@[@"-9", @"SpringBoard"]];
-    [killallSpringBoard launch];
-}*/
 
 - (id)readPreferenceValue:(PSSpecifier*)specifier {
 	NSString *path = [NSString stringWithFormat:@"/User/Library/Preferences/%@.plist", specifier.properties[@"defaults"]];
@@ -42,15 +34,51 @@
 		if (notificationName) {
 			CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), notificationName, NULL, NULL, YES);
 		}
-    if ([[NSString stringWithFormat:@"%@",value] isEqual:@"3"]) {
-        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"This Feature is in beta!"
-                           message:@"Windows support is still in beta and it might not work properly for you at the moment. It is advised to use the Crossplatform server meanwhile."
+    if ([[NSString stringWithFormat:@"%@",value] isEqual:@"3"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"pcspecifier"]) {
+        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform use is advised!"
+                           message:@"Windows SSH support is buggy at the moment. Crossplatform server use is advised."
                            preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
                                handler:^(UIAlertAction * action) {}];
         [alert addAction:defaultAction];
         [self presentViewController:alert animated:YES completion:nil];
-    }
+    } else if ([[NSString stringWithFormat:@"%@",value] isEqual:@"2"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"pcspecifier"]) {
+				UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"iOS only supports SSH"
+													 message:@"Since the crossplatform server uses python3, iOS as a receiver only supports SSH at the moment."
+													 preferredStyle:UIAlertControllerStyleAlert];
+				UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+															 handler:^(UIAlertAction * action) {}];
+				[alert addAction:defaultAction];
+				[self presentViewController:alert animated:YES completion:nil];
+		}
+
+		if ([[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"receiver"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"password"]) {
+			UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Respring" style:UIBarButtonItemStylePlain target:self action:@selector(killall)];
+			self.navigationItem.rightBarButtonItem = button;
+		}
+}
+
+- (void)killall {
+    NSTask *killallSpringBoard = [[NSTask alloc] init];
+    [killallSpringBoard setLaunchPath:@"/usr/bin/killall"];
+    [killallSpringBoard setArguments:@[@"-9", @"SpringBoard"]];
+    [killallSpringBoard launch];
+}
+
+- (void)paypal {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.paypal.me/greg0109"]];
+}
+
+- (void)openTwitter {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/greg_0109"]];
+}
+
+- (void)reddit {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.reddit.com/user/greg0109/"]];
+}
+
+- (void)sendEmail {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"mailto:greg.rabago@gmail.com?subject=ForwardNotifier"]];
 }
 
 -(void)testnotif {
