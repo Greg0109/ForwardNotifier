@@ -16,6 +16,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+		if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-FirstUse"] isEqual:@"1"]) {
+			UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"This tweak relies on a CC module!"
+												 message:@"To enable or disable ForwardNotifier, you need to use the CC module. We recomend CC support to enable third party modules. This alert and any other that show up on settings will only show up once."
+												 preferredStyle:UIAlertControllerStyleAlert];
+			UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+														 handler:^(UIAlertAction * action) {}];
+			[alert addAction:defaultAction];
+			[self presentViewController:alert animated:YES completion:nil];
+			[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-FirstUse"];
+	  }
 }
 
 - (id)readPreferenceValue:(PSSpecifier*)specifier {
@@ -35,6 +45,7 @@
 			CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), notificationName, NULL, NULL, YES);
 		}
     if ([[NSString stringWithFormat:@"%@",value] isEqual:@"3"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"pcspecifier"]) {
+			if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-PCSpecifierWindows"] isEqual:@"1"]) {
         UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform use is advised!"
                            message:@"Windows SSH support is buggy at the moment. Crossplatform server use is advised."
                            preferredStyle:UIAlertControllerStyleAlert];
@@ -42,7 +53,10 @@
                                handler:^(UIAlertAction * action) {}];
         [alert addAction:defaultAction];
         [self presentViewController:alert animated:YES completion:nil];
+				[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-PCSpecifierWindows"];
+			}
     } else if ([[NSString stringWithFormat:@"%@",value] isEqual:@"2"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"pcspecifier"]) {
+			if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-PCSpecifieriOS"] isEqual:@"1"]) {
 				UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"iOS only supports SSH"
 													 message:@"Since the crossplatform server uses python3, iOS as a receiver only supports SSH at the moment."
 													 preferredStyle:UIAlertControllerStyleAlert];
@@ -50,7 +64,10 @@
 															 handler:^(UIAlertAction * action) {}];
 				[alert addAction:defaultAction];
 				[self presentViewController:alert animated:YES completion:nil];
+				[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-PCSpecifieriOS"];
+			}
 		} else if ([[NSString stringWithFormat:@"%@",value] isEqual:@"1"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"methodspecifier"]) {
+			if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-MethodSpecifier"] isEqual:@"1"]) {
 				UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform Server"
 													 message:@"When using the Crossplatform Server you only need to insert the hostname or ip address. There's no need for user, password or port."
 													 preferredStyle:UIAlertControllerStyleAlert];
@@ -58,6 +75,8 @@
 															 handler:^(UIAlertAction * action) {}];
 				[alert addAction:defaultAction];
 				[self presentViewController:alert animated:YES completion:nil];
+				[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-MethodSpecifier"];
+			}
 		}
 
 		if ([[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"receiver"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"password"]) {

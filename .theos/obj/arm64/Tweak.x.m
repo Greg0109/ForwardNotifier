@@ -34,7 +34,7 @@ static BBServer *notificationserver = nil;
 static void loadPrefs() {
   NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.greg0109.forwardnotifierprefs.plist"];
   receiver = prefs[@"receiver"] ? [prefs[@"receiver"] boolValue] : NO;
-  errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : YES;
+  errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : NO;
   lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
   pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
 
@@ -86,9 +86,9 @@ static dispatch_queue_t getBBServerQueue() {
 #define _LOGOS_RETURN_RETAINED
 #endif
 
-@class SBLockStateAggregator; @class BBServer; @class BBAction; @class BBBulletin; @class SpringBoard; 
+@class BBServer; @class BBAction; @class SpringBoard; @class SBLockStateAggregator; @class BBBulletin; 
 
-static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBAction(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBAction"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBBulletin(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBBulletin"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$SBLockStateAggregator(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("SBLockStateAggregator"); } return _klass; }
+static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBBulletin(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBBulletin"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBAction(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBAction"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$SBLockStateAggregator(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("SBLockStateAggregator"); } return _klass; }
 #line 67 "Tweak.x"
 static BBServer* (*_logos_orig$server$BBServer$initWithQueue$)(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id) _LOGOS_RETURN_RETAINED; static BBServer* _logos_method$server$BBServer$initWithQueue$(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id) _LOGOS_RETURN_RETAINED; static BBServer* (*_logos_orig$server$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$)(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id, id, id, id, id, id, id, id, id) _LOGOS_RETURN_RETAINED; static BBServer* _logos_method$server$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id, id, id, id, id, id, id, id, id) _LOGOS_RETURN_RETAINED; static void (*_logos_orig$server$BBServer$dealloc)(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL); static void _logos_method$server$BBServer$dealloc(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL); 
 
@@ -215,7 +215,9 @@ void pushnotif(BOOL override) {
         NSData * dataRead = [read readDataToEndOfFile];
         NSString *erroroutput = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
         if ([erroroutput length] > 2 && errorlog) {
-          testnotif(@"ForwardNotifier Error",erroroutput);
+          if ([erroroutput containsString:@"curl"] && ![erroroutput containsString:@"Empty reply"]) {
+            testnotif(@"ForwardNotifier Error",erroroutput);
+          }
         }
       });
     }
@@ -274,7 +276,7 @@ static void _logos_method$devicereceiver$SpringBoard$applicationDidFinishLaunchi
 
 
 
-static __attribute__((constructor)) void _logosLocalCtor_e6aabc04(int __unused argc, char __unused **argv, char __unused **envp) {
+static __attribute__((constructor)) void _logosLocalCtor_35ce7382(int __unused argc, char __unused **argv, char __unused **envp) {
   loadPrefs();
   CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)loadPrefs, CFSTR("com.greg0109.forwardnotifierprefs.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
 

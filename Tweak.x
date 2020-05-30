@@ -33,7 +33,7 @@ static BBServer *notificationserver = nil;
 static void loadPrefs() {
   NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.greg0109.forwardnotifierprefs.plist"];
   receiver = prefs[@"receiver"] ? [prefs[@"receiver"] boolValue] : NO;
-  errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : YES;
+  errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : NO;
   lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
   pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
 
@@ -189,7 +189,9 @@ void pushnotif(BOOL override) {
         NSData * dataRead = [read readDataToEndOfFile];
         NSString *erroroutput = [[NSString alloc] initWithData:dataRead encoding:NSUTF8StringEncoding];
         if ([erroroutput length] > 2 && errorlog) {
-          testnotif(@"ForwardNotifier Error",erroroutput);
+          if ([erroroutput containsString:@"curl"] && ![erroroutput containsString:@"Empty reply"]) {
+            testnotif(@"ForwardNotifier Error",erroroutput);
+          }
         }
       });
     }
