@@ -17,7 +17,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     //UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Respring" style:UIBarButtonItemStylePlain target:self action:@selector(killall)];
-    self.navigationItem.rightBarButtonItem = button;
+    //self.navigationItem.rightBarButtonItem = button;
 }
 /*- (void)killall {
     NSTask *killallSpringBoard = [[NSTask alloc] init];
