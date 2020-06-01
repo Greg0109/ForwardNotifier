@@ -79,7 +79,7 @@
 			}
 		}
 
-		if ([[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"receiver"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"password"]) {
+		if ([[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"receiver"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"password"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"chargingenabled"]) {
 			UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Respring" style:UIBarButtonItemStylePlain target:self action:@selector(killall)];
 			self.navigationItem.rightBarButtonItem = button;
 		}
@@ -109,7 +109,7 @@
 }
 
 -(void)testnotif {
-	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.greg0109.forwardnotifierreceiver/testnotification" object:nil userInfo:nil];
+	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.greg0109.forwardnotifierreceiver/notification" object:nil userInfo:nil];
 }
 
 @end

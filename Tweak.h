@@ -36,10 +36,14 @@
 @property (nonatomic,retain) NSString * title;
 @end
 
+@interface BBSectionIcon : NSObject
+@end
+
 @interface BBBulletin : NSObject
 @property (nonatomic,retain) NSString * message;
 @property (nonatomic,retain) NSString * title;
 @property (nonatomic,retain) NSString * sectionID;
+@property (nonatomic,retain) BBSectionIcon * icon;
 @property (nonatomic,retain) NSString * bulletinID;
 @property (nonatomic,retain) NSString * recordID;
 @property (nonatomic,retain) NSString * publisherBulletinID;

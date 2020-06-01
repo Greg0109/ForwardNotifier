@@ -8,6 +8,7 @@
 BOOL receiver;
 BOOL errorlog;
 BOOL lockstateenabled;
+BOOL chargingenabled;
 int pcspecifier;
 
 //Settings
@@ -24,7 +25,9 @@ NSArray *arguments;
 NSString *pc;
 NSString *title;
 NSString *message;
+NSString *image;
 BOOL locked;
+long long previousState = 0;
 
 //For the error output
 NSPipe *out;
@@ -34,6 +37,7 @@ static void loadPrefs() {
   NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.greg0109.forwardnotifierprefs.plist"];
   receiver = prefs[@"receiver"] ? [prefs[@"receiver"] boolValue] : NO;
   errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : NO;
+  chargingenabled = prefs[@"chargingenabled"] ? [prefs[@"chargingenabled"] boolValue] : NO;
   lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
   pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
 
@@ -64,7 +68,6 @@ static dispatch_queue_t getBBServerQueue() {
     return queue;
 }
 
-%group server
 %hook BBServer
 -(id)initWithQueue:(id)arg1 {
     notificationserver = %orig;
@@ -80,7 +83,6 @@ static dispatch_queue_t getBBServerQueue() {
   }
   %orig;
 }
-%end
 %end
 
 void testnotif(NSString *titletest, NSString *messagetest) {
@@ -221,17 +223,36 @@ void pushnotif(BOOL override) {
 
 %hook SpringBoard
 -(void)applicationDidFinishLaunching:(id)arg1 {
-  [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/activate" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
-      [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-Status"];
-  }];
-  [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/deactivate" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
-      [[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"ForwardNotifier-Status"];
-  }];
-  [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/testnotification" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
+  [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/notification" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
+    NSString *titlenotif = notification.userInfo[@"title"];
+    NSString *messagenotif = notification.userInfo[@"message"];
+    if ([titlenotif isEqualToString:@"ActivateForwardNotifier"]) {
+      if ([messagenotif isEqualToString:@"true"]) {
+        [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-Status"];
+      } else if ([messagenotif isEqualToString:@"false"]) {
+        [[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"ForwardNotifier-Status"];
+      }
+    } else {
       title = @"ForwardNotifier Test";
       message = @"This is a test notification";
       testnotif(title,message);
+    }
   }];
+  %orig;
+}
+%end
+%end
+
+%group charging
+%hook UIDevice // Enable when charging - Disable when charging
+-(void)_setBatteryState:(long long)arg1 {
+  if (arg1 == 2 && previousState != arg1) { // Chargin
+    [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-Status"];
+    previousState = arg1;
+  } else if (arg1 == 1 && previousState != arg1) { // 1 -> Not charging
+    [[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"ForwardNotifier-Status"];
+    previousState = arg1;
+  }
   %orig;
 }
 %end
@@ -253,12 +274,13 @@ void pushnotif(BOOL override) {
 %ctor {
   loadPrefs();
   CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)loadPrefs, CFSTR("com.greg0109.forwardnotifierprefs.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
-  %init(server)
+  %init();
+  if (chargingenabled) {
+    %init(charging);
+  }
   if (receiver) {
     %init(devicereceiver);
   } else {
-    %init(ssh)
+    %init(ssh);
   }
 }
-
-///var/mobile/Library/Preferences/com.greg0109.forwardnotifierblacklist
