@@ -6,6 +6,8 @@ Hi! This tweak forwards your notifications to your PC (Windows, Mac or Linux!) o
 
 Up uptil now it only worked using SSH, but now, I am introducing the crossplatform server! A python script that creates a https server on your machine that listens to ForwardNotifier calls to display those notifications on your PC. (**Crossplatform server doesn't work on iOS devices, if you want to use an iOS device as a receiver you must use SSH. Instructions down below**).
 
+**Read both methods (SSH and Crossplatform server) to decide which method you prefer to use. If one method does not work for you, you can try the other method**.
+
 **If you are a beginner, I suggest you use the Crossplatform Server, it's much more user friendly. The SSH tutorial and Crossplatform tutorial are down below.**
 
 # SSH Setup for the Receiver
@@ -41,7 +43,7 @@ Notifications can be disabled when device is unlocked.
 
 # Crossplatform Server Setup for the Receiver
 
-To install the crossplatform server, you only need to install the provided Autoinstall packages. These installers will check and install all necessary dependencies for this program to work. Follow the instructions for each specific OS down below:
+To install the crossplatform server, you only need to install the provided Autoinstall packages. These installers will check and install all necessary dependencies for this program to work. **The Crossplatform server will autolaunch on every boot of the system**. Follow the instructions for each specific OS down below:
 
 [MacOS](https://github.com/Greg0109/ForwardNotifier/blob/master/ForwardNotifier%20Client%20Tools/Crossplatform%20Server/Mac%20Autoinstall/ForwardNotifierInstaller): Place the script anywhere you want on your Mac and launch it on terminal, like so "./ForwardNotifierInstaller" (Do not use sudo).
 
