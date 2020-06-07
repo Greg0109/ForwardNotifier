@@ -7,6 +7,11 @@
 - (void)postNotificationName:(NSString *)name object:(NSString *)object userInfo:(NSDictionary *)userInfo;
 @end
 
+/*@interface UIDevice (ForwardNotifier)
++(id)currentDevice;
+-(long long)batteryState;
+@end*/
+
 @interface JBBulletinManager : NSObject
   +(id)sharedInstance;
   -(id)showBulletinWithTitle:(NSString *)title message:(NSString *)message bundleID:(NSString *)bundleID;

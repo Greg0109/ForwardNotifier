@@ -26,6 +26,7 @@
 			[self presentViewController:alert animated:YES completion:nil];
 			[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-FirstUse"];
 	  }
+		((UITableView *)[self.view.subviews objectAtIndex:0]).keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
 }
 
 - (id)readPreferenceValue:(PSSpecifier*)specifier {
