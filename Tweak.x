@@ -1,8 +1,4 @@
 #import "Tweak.h"
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import <UIKit/UIControl.h>
-#import <dlfcn.h>
 
 //Settings
 BOOL receiver;

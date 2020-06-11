@@ -1,16 +1,13 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
+#import <UIKit/UIControl.h>
+#import <dlfcn.h>
 #include <NSTask.h>
 
 @interface NSDistributedNotificationCenter : NSNotificationCenter
 + (instancetype)defaultCenter;
 - (void)postNotificationName:(NSString *)name object:(NSString *)object userInfo:(NSDictionary *)userInfo;
 @end
-
-/*@interface UIDevice (ForwardNotifier)
-+(id)currentDevice;
--(long long)batteryState;
-@end*/
 
 @interface JBBulletinManager : NSObject
   +(id)sharedInstance;
