@@ -9,7 +9,7 @@ port = 8000
 def sendnotif(Title, Message, OS):  # send os with the request since it's known by the sender
     # system = platform.system()
     if OS == "Windows":
-        subprocess.call(["ForwardNotifierReceiver", "-Title",
+        subprocess.call(["ForwardNotifierReceiver", "-title",
                          Title, "-message", Message])
     elif OS == "Linux":
         subprocess.call(
