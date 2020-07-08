@@ -1,10 +1,11 @@
 #import "Tweak.h"
 
+struct SBIconImageInfo iconspecs;
+
 //Settings
 BOOL receiver;
 BOOL errorlog;
 BOOL lockstateenabled;
-BOOL chargingenabled;
 int pcspecifier;
 
 //Settings
@@ -21,9 +22,8 @@ NSArray *arguments;
 NSString *pc;
 NSString *title;
 NSString *message;
-NSString *image;
+NSString *bundleID;
 BOOL locked;
-long long previousState = 0;
 
 //For the error output
 NSPipe *out;
@@ -33,7 +33,6 @@ static void loadPrefs() {
   NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.greg0109.forwardnotifierprefs.plist"];
   receiver = prefs[@"receiver"] ? [prefs[@"receiver"] boolValue] : NO;
   errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : NO;
-  chargingenabled = prefs[@"chargingenabled"] ? [prefs[@"chargingenabled"] boolValue] : NO;
   lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
   pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
 
@@ -91,7 +90,7 @@ void testnotif(NSString *titletest, NSString *messagetest) {
   bulletin.recordID = [[NSProcessInfo processInfo] globallyUniqueString];
   bulletin.publisherBulletinID = [[NSProcessInfo processInfo] globallyUniqueString];
   bulletin.date = [NSDate date];
-  bulletin.defaultAction = [%c(BBAction) actionWithLaunchBundleID:@"com.apple.Preferences" callblock:nil];
+  bulletin.defaultAction = [%c(BBAction) actionWithLaunchBundleID:@"prefs:root=ForwardNotifier" callblock:nil];
   dispatch_sync(getBBServerQueue(), ^{
     [notificationserver publishBulletin:bulletin destinations:14];
   });
@@ -162,19 +161,38 @@ void pushnotif(BOOL override) {
       });
     }
   } else if (methodspecifier == 1) { // Crossplatform Server
+    // Get Icon data
+    SBApplicationIcon *icon = [((SBIconController *)[%c(SBIconController) sharedInstance]).model expectedIconForDisplayIdentifier:bundleID];
+    UIImage *image = nil;
+  	iconspecs.size = CGSizeMake(60, 60);
+  	iconspecs.scale = [UIScreen mainScreen].scale;
+  	iconspecs.continuousCornerRadius = 12;
+  	image = [icon generateIconImageWithInfo:iconspecs];
+    NSData *iconData = UIImagePNGRepresentation(image);
+    NSString *iconBase64;
+    if (![title isEqualToString:@"ForwardNotifier Test"]) {
+      iconBase64 = [iconData base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+    } else {
+      iconBase64 = forwardNotifierIconBase64;
+    }
+    // Base64 both title and message
+    NSData *titleData = [title dataUsingEncoding: NSUTF8StringEncoding];
+    NSString *titleBase64 = [titleData base64EncodedStringWithOptions:0];
+    NSData *messageData = [message dataUsingEncoding: NSUTF8StringEncoding];
+    NSString *messageBase64 = [messageData base64EncodedStringWithOptions:0];
     if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-Status"] isEqual:@"1"] && (locked)) {
       dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
       dispatch_async(sendnotif, ^{
         title = [title stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
         message = [message stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
         if (pcspecifier == 0) { // Linux
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\"}",title,message];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         } else if (pcspecifier == 1) { // MacOS
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"MacOS\"}",title,message];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"MacOS\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         } else if (pcspecifier == 2) { // iOS
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"iOS\"}",title,message];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"iOS\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         } else if (pcspecifier == 3) { // Windows
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Windows\"}",title,message];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Windows\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         }
         NSTask *task = [[NSTask alloc] init];
         [task setLaunchPath:@"/usr/bin/curl"];
@@ -196,13 +214,15 @@ void pushnotif(BOOL override) {
   }
 }
 
-%group ssh
+%group sender
 %hook BBServer
 -(void)publishBulletin:(BBBulletin *)arg1 destinations:(unsigned long long)arg2 {
   %orig;
   title = arg1.content.title;
   message = arg1.content.message;
+  bundleID = arg1.sectionID;
   if ([title length] == 0) {
+    //title = [[NSBundle bundleWithIdentifier:@"BundleIdentifier"] objectForInfoDictionaryKey:(id)kCFBundleExecutableKey];
     NSArray *name = [arg1.sectionID componentsSeparatedByString:@"."];
     title = [NSString stringWithFormat:@"%@",[name lastObject]];
   }
@@ -229,26 +249,12 @@ void pushnotif(BOOL override) {
         [[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"ForwardNotifier-Status"];
       }
     } else {
+      [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-Status"];
       title = @"ForwardNotifier Test";
       message = @"This is a test notification";
       testnotif(title,message);
     }
   }];
-  %orig;
-}
-%end
-%end
-
-%group charging
-%hook UIDevice // Enable when charging - Disable when charging
--(void)_setBatteryState:(long long)arg1 {
-  if (arg1 == 2 && previousState != arg1) { // Chargin
-    [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-Status"];
-    previousState = arg1;
-  } else if (arg1 == 1 && previousState != arg1) { // 1 -> Not charging
-    [[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"ForwardNotifier-Status"];
-    previousState = arg1;
-  }
   %orig;
 }
 %end
@@ -271,12 +277,9 @@ void pushnotif(BOOL override) {
   loadPrefs();
   CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)loadPrefs, CFSTR("com.greg0109.forwardnotifierprefs.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
   %init();
-  if (chargingenabled) {
-    %init(charging);
-  }
   if (receiver) {
     %init(devicereceiver);
   } else {
-    %init(ssh);
+    %init(sender);
   }
 }

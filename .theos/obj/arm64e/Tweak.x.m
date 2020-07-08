@@ -1,11 +1,12 @@
 #line 1 "Tweak.x"
 #import "Tweak.h"
 
+struct SBIconImageInfo iconspecs;
+
 
 BOOL receiver;
 BOOL errorlog;
 BOOL lockstateenabled;
-BOOL chargingenabled;
 int pcspecifier;
 
 
@@ -22,9 +23,8 @@ NSArray *arguments;
 NSString *pc;
 NSString *title;
 NSString *message;
-NSString *image;
+NSString *bundleID;
 BOOL locked;
-long long previousState = 0;
 
 
 NSPipe *out;
@@ -34,7 +34,6 @@ static void loadPrefs() {
   NSMutableDictionary *prefs = [NSMutableDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.greg0109.forwardnotifierprefs.plist"];
   receiver = prefs[@"receiver"] ? [prefs[@"receiver"] boolValue] : NO;
   errorlog = prefs[@"errorlog"] ? [prefs[@"errorlog"] boolValue] : NO;
-  chargingenabled = prefs[@"chargingenabled"] ? [prefs[@"chargingenabled"] boolValue] : NO;
   lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
   pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
 
@@ -86,10 +85,10 @@ static dispatch_queue_t getBBServerQueue() {
 #define _LOGOS_RETURN_RETAINED
 #endif
 
-@class SpringBoard; @class SBLockStateAggregator; @class BBAction; @class BBServer; @class UIDevice; @class BBBulletin; 
+@class BBServer; @class SpringBoard; @class BBBulletin; @class BBAction; @class SBLockStateAggregator; @class SBIconController; 
 static BBServer* (*_logos_orig$_ungrouped$BBServer$initWithQueue$)(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id) _LOGOS_RETURN_RETAINED; static BBServer* _logos_method$_ungrouped$BBServer$initWithQueue$(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id) _LOGOS_RETURN_RETAINED; static BBServer* (*_logos_orig$_ungrouped$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$)(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id, id, id, id, id, id, id, id, id) _LOGOS_RETURN_RETAINED; static BBServer* _logos_method$_ungrouped$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$(_LOGOS_SELF_TYPE_INIT BBServer*, SEL, id, id, id, id, id, id, id, id, id) _LOGOS_RETURN_RETAINED; static void (*_logos_orig$_ungrouped$BBServer$dealloc)(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL); static void _logos_method$_ungrouped$BBServer$dealloc(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL); 
-static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$SBLockStateAggregator(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("SBLockStateAggregator"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBBulletin(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBBulletin"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBAction(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBAction"); } return _klass; }
-#line 67 "Tweak.x"
+static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBAction(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBAction"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$BBBulletin(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("BBBulletin"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$SBIconController(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("SBIconController"); } return _klass; }static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$SBLockStateAggregator(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("SBLockStateAggregator"); } return _klass; }
+#line 66 "Tweak.x"
 
 static BBServer* _logos_method$_ungrouped$BBServer$initWithQueue$(_LOGOS_SELF_TYPE_INIT BBServer* __unused self, SEL __unused _cmd, id arg1) _LOGOS_RETURN_RETAINED {
     notificationserver = _logos_orig$_ungrouped$BBServer$initWithQueue$(self, _cmd, arg1);
@@ -117,7 +116,7 @@ void testnotif(NSString *titletest, NSString *messagetest) {
   bulletin.recordID = [[NSProcessInfo processInfo] globallyUniqueString];
   bulletin.publisherBulletinID = [[NSProcessInfo processInfo] globallyUniqueString];
   bulletin.date = [NSDate date];
-  bulletin.defaultAction = [_logos_static_class_lookup$BBAction() actionWithLaunchBundleID:@"com.apple.Preferences" callblock:nil];
+  bulletin.defaultAction = [_logos_static_class_lookup$BBAction() actionWithLaunchBundleID:@"prefs:root=ForwardNotifier" callblock:nil];
   dispatch_sync(getBBServerQueue(), ^{
     [notificationserver publishBulletin:bulletin destinations:14];
   });
@@ -188,19 +187,38 @@ void pushnotif(BOOL override) {
       });
     }
   } else if (methodspecifier == 1) { 
+    
+    SBApplicationIcon *icon = [((SBIconController *)[_logos_static_class_lookup$SBIconController() sharedInstance]).model expectedIconForDisplayIdentifier:bundleID];
+    UIImage *image = nil;
+  	iconspecs.size = CGSizeMake(60, 60);
+  	iconspecs.scale = [UIScreen mainScreen].scale;
+  	iconspecs.continuousCornerRadius = 12;
+  	image = [icon generateIconImageWithInfo:iconspecs];
+    NSData *iconData = UIImagePNGRepresentation(image);
+    NSString *iconBase64;
+    if (![title isEqualToString:@"ForwardNotifier Test"]) {
+      iconBase64 = [iconData base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+    } else {
+      iconBase64 = forwardNotifierIconBase64;
+    }
+    
+    NSData *titleData = [title dataUsingEncoding: NSUTF8StringEncoding];
+    NSString *titleBase64 = [titleData base64EncodedStringWithOptions:0];
+    NSData *messageData = [message dataUsingEncoding: NSUTF8StringEncoding];
+    NSString *messageBase64 = [messageData base64EncodedStringWithOptions:0];
     if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-Status"] isEqual:@"1"] && (locked)) {
       dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
       dispatch_async(sendnotif, ^{
         title = [title stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
         message = [message stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
         if (pcspecifier == 0) { 
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\"}",title,message];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         } else if (pcspecifier == 1) { 
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"MacOS\"}",title,message];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"MacOS\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         } else if (pcspecifier == 2) { 
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"iOS\"}",title,message];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"iOS\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         } else if (pcspecifier == 3) { 
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Windows\"}",title,message];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Windows\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         }
         NSTask *task = [[NSTask alloc] init];
         [task setLaunchPath:@"/usr/bin/curl"];
@@ -222,13 +240,15 @@ void pushnotif(BOOL override) {
   }
 }
 
-static void (*_logos_orig$ssh$BBServer$publishBulletin$destinations$)(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL, BBBulletin *, unsigned long long); static void _logos_method$ssh$BBServer$publishBulletin$destinations$(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL, BBBulletin *, unsigned long long); static void (*_logos_orig$ssh$SpringBoard$applicationDidFinishLaunching$)(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST, SEL, id); static void _logos_method$ssh$SpringBoard$applicationDidFinishLaunching$(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST, SEL, id); 
+static void (*_logos_orig$sender$BBServer$publishBulletin$destinations$)(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL, BBBulletin *, unsigned long long); static void _logos_method$sender$BBServer$publishBulletin$destinations$(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST, SEL, BBBulletin *, unsigned long long); static void (*_logos_orig$sender$SpringBoard$applicationDidFinishLaunching$)(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST, SEL, id); static void _logos_method$sender$SpringBoard$applicationDidFinishLaunching$(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST, SEL, id); 
 
-static void _logos_method$ssh$BBServer$publishBulletin$destinations$(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, BBBulletin * arg1, unsigned long long arg2) {
-  _logos_orig$ssh$BBServer$publishBulletin$destinations$(self, _cmd, arg1, arg2);
+static void _logos_method$sender$BBServer$publishBulletin$destinations$(_LOGOS_SELF_TYPE_NORMAL BBServer* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, BBBulletin * arg1, unsigned long long arg2) {
+  _logos_orig$sender$BBServer$publishBulletin$destinations$(self, _cmd, arg1, arg2);
   title = arg1.content.title;
   message = arg1.content.message;
+  bundleID = arg1.sectionID;
   if ([title length] == 0) {
+    
     NSArray *name = [arg1.sectionID componentsSeparatedByString:@"."];
     title = [NSString stringWithFormat:@"%@",[name lastObject]];
   }
@@ -244,7 +264,7 @@ static void _logos_method$ssh$BBServer$publishBulletin$destinations$(_LOGOS_SELF
 
 
 
-static void _logos_method$ssh$SpringBoard$applicationDidFinishLaunching$(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, id arg1) {
+static void _logos_method$sender$SpringBoard$applicationDidFinishLaunching$(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, id arg1) {
   [[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"com.greg0109.forwardnotifierreceiver/notification" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification) {
     NSString *titlenotif = notification.userInfo[@"title"];
     NSString *messagenotif = notification.userInfo[@"message"];
@@ -255,27 +275,13 @@ static void _logos_method$ssh$SpringBoard$applicationDidFinishLaunching$(_LOGOS_
         [[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"ForwardNotifier-Status"];
       }
     } else {
+      [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-Status"];
       title = @"ForwardNotifier Test";
       message = @"This is a test notification";
       testnotif(title,message);
     }
   }];
-  _logos_orig$ssh$SpringBoard$applicationDidFinishLaunching$(self, _cmd, arg1);
-}
-
-
-
-static void (*_logos_orig$charging$UIDevice$_setBatteryState$)(_LOGOS_SELF_TYPE_NORMAL UIDevice* _LOGOS_SELF_CONST, SEL, long long); static void _logos_method$charging$UIDevice$_setBatteryState$(_LOGOS_SELF_TYPE_NORMAL UIDevice* _LOGOS_SELF_CONST, SEL, long long); 
- 
-static void _logos_method$charging$UIDevice$_setBatteryState$(_LOGOS_SELF_TYPE_NORMAL UIDevice* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, long long arg1) {
-  if (arg1 == 2 && previousState != arg1) { 
-    [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-Status"];
-    previousState = arg1;
-  } else if (arg1 == 1 && previousState != arg1) { 
-    [[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"ForwardNotifier-Status"];
-    previousState = arg1;
-  }
-  _logos_orig$charging$UIDevice$_setBatteryState$(self, _cmd, arg1);
+  _logos_orig$sender$SpringBoard$applicationDidFinishLaunching$(self, _cmd, arg1);
 }
 
 
@@ -293,16 +299,13 @@ static void _logos_method$devicereceiver$SpringBoard$applicationDidFinishLaunchi
 
 
 
-static __attribute__((constructor)) void _logosLocalCtor_babeaf76(int __unused argc, char __unused **argv, char __unused **envp) {
+static __attribute__((constructor)) void _logosLocalCtor_c9133fcb(int __unused argc, char __unused **argv, char __unused **envp) {
   loadPrefs();
   CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)loadPrefs, CFSTR("com.greg0109.forwardnotifierprefs.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
-  {Class _logos_class$_ungrouped$BBServer = objc_getClass("BBServer"); MSHookMessageEx(_logos_class$_ungrouped$BBServer, @selector(initWithQueue:), (IMP)&_logos_method$_ungrouped$BBServer$initWithQueue$, (IMP*)&_logos_orig$_ungrouped$BBServer$initWithQueue$);MSHookMessageEx(_logos_class$_ungrouped$BBServer, @selector(initWithQueue:dataProviderManager:syncService:dismissalSyncCache:observerListener:utilitiesListener:conduitListener:systemStateListener:settingsListener:), (IMP)&_logos_method$_ungrouped$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$, (IMP*)&_logos_orig$_ungrouped$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$);MSHookMessageEx(_logos_class$_ungrouped$BBServer, sel_registerName("dealloc"), (IMP)&_logos_method$_ungrouped$BBServer$dealloc, (IMP*)&_logos_orig$_ungrouped$BBServer$dealloc);}
-  if (chargingenabled) {
-    {Class _logos_class$charging$UIDevice = objc_getClass("UIDevice"); MSHookMessageEx(_logos_class$charging$UIDevice, @selector(_setBatteryState:), (IMP)&_logos_method$charging$UIDevice$_setBatteryState$, (IMP*)&_logos_orig$charging$UIDevice$_setBatteryState$);}
-  }
+  {Class _logos_class$_ungrouped$BBServer = objc_getClass("BBServer"); { MSHookMessageEx(_logos_class$_ungrouped$BBServer, @selector(initWithQueue:), (IMP)&_logos_method$_ungrouped$BBServer$initWithQueue$, (IMP*)&_logos_orig$_ungrouped$BBServer$initWithQueue$);}{ MSHookMessageEx(_logos_class$_ungrouped$BBServer, @selector(initWithQueue:dataProviderManager:syncService:dismissalSyncCache:observerListener:utilitiesListener:conduitListener:systemStateListener:settingsListener:), (IMP)&_logos_method$_ungrouped$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$, (IMP*)&_logos_orig$_ungrouped$BBServer$initWithQueue$dataProviderManager$syncService$dismissalSyncCache$observerListener$utilitiesListener$conduitListener$systemStateListener$settingsListener$);}{ MSHookMessageEx(_logos_class$_ungrouped$BBServer, sel_registerName("dealloc"), (IMP)&_logos_method$_ungrouped$BBServer$dealloc, (IMP*)&_logos_orig$_ungrouped$BBServer$dealloc);}}
   if (receiver) {
-    {Class _logos_class$devicereceiver$SpringBoard = objc_getClass("SpringBoard"); MSHookMessageEx(_logos_class$devicereceiver$SpringBoard, @selector(applicationDidFinishLaunching:), (IMP)&_logos_method$devicereceiver$SpringBoard$applicationDidFinishLaunching$, (IMP*)&_logos_orig$devicereceiver$SpringBoard$applicationDidFinishLaunching$);}
+    {Class _logos_class$devicereceiver$SpringBoard = objc_getClass("SpringBoard"); { MSHookMessageEx(_logos_class$devicereceiver$SpringBoard, @selector(applicationDidFinishLaunching:), (IMP)&_logos_method$devicereceiver$SpringBoard$applicationDidFinishLaunching$, (IMP*)&_logos_orig$devicereceiver$SpringBoard$applicationDidFinishLaunching$);}}
   } else {
-    {Class _logos_class$ssh$BBServer = objc_getClass("BBServer"); MSHookMessageEx(_logos_class$ssh$BBServer, @selector(publishBulletin:destinations:), (IMP)&_logos_method$ssh$BBServer$publishBulletin$destinations$, (IMP*)&_logos_orig$ssh$BBServer$publishBulletin$destinations$);Class _logos_class$ssh$SpringBoard = objc_getClass("SpringBoard"); MSHookMessageEx(_logos_class$ssh$SpringBoard, @selector(applicationDidFinishLaunching:), (IMP)&_logos_method$ssh$SpringBoard$applicationDidFinishLaunching$, (IMP*)&_logos_orig$ssh$SpringBoard$applicationDidFinishLaunching$);}
+    {Class _logos_class$sender$BBServer = objc_getClass("BBServer"); { MSHookMessageEx(_logos_class$sender$BBServer, @selector(publishBulletin:destinations:), (IMP)&_logos_method$sender$BBServer$publishBulletin$destinations$, (IMP*)&_logos_orig$sender$BBServer$publishBulletin$destinations$);}Class _logos_class$sender$SpringBoard = objc_getClass("SpringBoard"); { MSHookMessageEx(_logos_class$sender$SpringBoard, @selector(applicationDidFinishLaunching:), (IMP)&_logos_method$sender$SpringBoard$applicationDidFinishLaunching$, (IMP*)&_logos_orig$sender$SpringBoard$applicationDidFinishLaunching$);}}
   }
 }

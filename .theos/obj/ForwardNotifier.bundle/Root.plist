@@ -76,26 +76,6 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>This will enable ForwardNotifier when the device is charging. It will disable ForwardNotifier when unplugged.&#xA;You can still enable it manually using the CC module regardless.</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
-			<key>defaults</key>
-			<string>com.greg0109.forwardnotifierprefs</string>
-			<key>key</key>
-			<string>chargingenabled</string>
-			<key>label</key>
-			<string>Enable when charging</string>
-			<key>PostNotification</key>
-			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>footerText</key>
 			<string>If this setting is enabled, the device won't send the notifications when is unlocked.&#xA;Disable this if you would like to receive notifications on your PC/iOS device all the time.</string>
 		</dict>
 		<dict>

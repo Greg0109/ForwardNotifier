@@ -1,9 +1,7 @@
 ARCHS = arm64 arm64e
+GO_EASY_ON_ME = 1
 
 include $(THEOS)/makefiles/common.mk
-
-export TARGET = iphone:clang:11.2:11.0
-export ARCHS = arm64
 
 BUNDLE_NAME = ForwardNotifierCC
 ForwardNotifierCC_BUNDLE_EXTENSION = bundle

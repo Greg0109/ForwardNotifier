@@ -1,22 +1,93 @@
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
-# import platform
+import platform
 import subprocess
+import base64
+import requests
+import re
+
+if platform.system() == "Windows":
+    from PIL import Image  # convert to ico
+    from win10toast import ToastNotifier
+    toaster = ToastNotifier()
+
 port = 8000
 
+version = "1.0"
+iconpath = {
+    "Windows": "/temp/ForwardNotifierIcon",
+    "Linux": "/tmp/ForwardNotifierIcon",
+    "Darwin": "/tmp/ForwardNotifierIcon", # macos
+    "MacOS": "/tmp/ForwardNotifierIcon"
+}
 
-def sendnotif(Title, Message, OS):  # send os with the request since it's known by the sender
+def checkforupadate():
+    url = "https://gist.githubusercontent.com/Greg0109/f96b24011c7a2a56d29869f70ce271d3/raw/e27b2e2ab498ccc9440d19f11cb1342291ddb380/ForwardNotifierServer.py"
+    r = requests.get(url).text
+    m = re.search(r'version = .+', r)
+    ver = m.group(0).split("=")[1].replace('"', "").replace(" ", "")
+    if ver != version:
+        sendnotif("Update availabe!",
+                  "Run the install script again to update ForwardNotifier", platform.system())
+
+
+# send os with the request since it's known by the sender
+def sendnotif(Title, Message, OS, icon=None):
     # system = platform.system()
+
+    try:  # Try to decode
+        Title = base64.b64decode(Title.encode("utf-8")).decode("utf-8")
+    except:
+        print("Title is not base64")
+    try:  # Try to decode
+        Message = base64.b64decode(Message.encode("utf-8")).decode("utf-8")
+    except:
+        print("Message is not base64")
+    if icon:
+        print("Theres an icon!")
+        icon = base64.decodebytes(icon.encode("utf-8"))
+        open(iconpath[OS], "wb").write(icon) # send img to correct path
+
+    print("Sending notification:")
+    print("Title:", Title)
+    print("Message:", Message)
+
     if OS == "Windows":
-        subprocess.call(["ForwardNotifierReceiver", "-Title",
-                         Title, "-message", Message])
+        if icon:
+            # try:  # Try to decode
+            filename = iconpath[OS]
+            img = Image.open(filename)
+            img.save(iconpath[OS] + '.ico', format = 'ICO')
+            toaster.show_toast(Title,
+                                Message,
+                                icon_path=iconpath[OS] + ".ico",
+                                duration=5,
+                                threaded=True)
+            # except:  # icon not base64 aka ignore
+            #     toaster.show_toast(Title,
+            #                        Message,
+            #                        duration=5,
+            #                        threaded=True)
+        else:
+            toaster.show_toast(Title,
+                               Message,
+                               duration=5,
+                               threaded=True)
     elif OS == "Linux":
-        subprocess.call(
-            ["notify-send", "-i", "applications-development", Title, Message])
-    elif OS == "MacOS":
-        subprocess.call(["/usr/local/bin/terminal-notifier",
-                         "-sound", "pop", "-title", Title, "-message", Message])
+        if icon:
+            subprocess.call(
+                ["notify-send", "-i", iconpath[OS], Title, Message])
+        else:
+            subprocess.call(
+                ["notify-send", "-i", "applications-development", Title, Message])
+    elif OS == "Darwin" or OS == "MacOS": # macos
+        if icon:
+            subprocess.call(["/usr/local/bin/terminal-notifier",
+                            "-sound", "pop", "-appIcon", iconpath[OS], "-title", Title, "-message", Message])
+        else:
+            subprocess.call(["/usr/local/bin/terminal-notifier",
+                "-sound", "pop", "-title", Title, "-message", Message])
 
 
 def checkbody(body):  # checking the body for a post request, wont be a problem since we send it
@@ -35,6 +106,13 @@ def checkbody(body):  # checking the body for a post request, wont be a problem 
         if "OS" not in body:
             return [False, "No 'OS' in body"]
 
+        if "img" in body:
+            try:
+                base64.decodebytes(body["img"].encode("utf-8"))
+            except:
+                return [False, "Img not base64"]
+
+
         return [True]
     except:
         return [False, "unknown error"]
@@ -51,6 +129,7 @@ class S(BaseHTTPRequestHandler):
             "Success": Success,
             "value": args
         }
+        print("Sending: ", json.dumps(out).encode('utf-8'))
         self.wfile.write(json.dumps(out).encode('utf-8'))
 
     def do_GET(self):
@@ -71,19 +150,29 @@ class S(BaseHTTPRequestHandler):
               "\nHeaders:\n" + str(self.headers))
         print(content_length)
         if content_length > 0:
-            body = post_data.decode('utf-8')
-            print("Body:\n" + post_data.decode('utf-8'), "\n")
+            try:
+                body = post_data.decode('utf-8')
+                print("Body:\n" + post_data.decode('utf-8'), "\n")
+            except UnicodeEncodeError as e:
+                print("ForwardNotifierReciver Error:", e)
+                sendnotif("ForwardNotifierReciver Error:",
+                          "invalid characters", platform.system())
             if checkbody(body)[0] == True:  # all good
 
                 body = json.loads(body)
-                sendnotif(body["Title"], body["Message"], body["OS"])  # sends the body
+                if "img" in  body:
+                    sendnotif(body["Title"], body["Message"],
+                              body["OS"], body["img"])  # sends the body
+                else:
+                    sendnotif(body["Title"], body["Message"],
+                              body["OS"])  # sends the body
 
                 self.send_res("Sent!")
 
             else:  # Body is wrong
 
                 print(checkbody(body)[1])  # send the error
-                self.send_res(checkbody(body)[1], Success=False)
+                self.send_res(checkbody(body)[1], Success=False, code=400)
 
         else:
             self.send_res(
@@ -94,6 +183,7 @@ def run(server_class=HTTPServer, handler_class=S, port=port):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     print('Starting httpd on port', port, '...')
+    checkforupadate()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

@@ -1,8 +1,6 @@
 #include "FNPRootListController.h"
-#import <Preferences/PSSpecifier.h>
-#import <Preferences/PSListController.h>
-#import <AppList/AppList.h>
-#include "NSTask.h"
+
+int __isOSVersionAtLeast(int major, int minor, int patch) { NSOperatingSystemVersion version; version.majorVersion = major; version.minorVersion = minor; version.patchVersion = patch; return [[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:version]; }
 
 @implementation FNPRootListController
 
@@ -17,15 +15,19 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 		if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-FirstUse"] isEqual:@"1"]) {
-			UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"This tweak relies on a CC module!"
-												 message:@"To enable or disable ForwardNotifier, you need to use the CC module. We recomend CC support to enable third party modules. This alert and any other that show up on settings will only show up once."
-												 preferredStyle:UIAlertControllerStyleAlert];
-			UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
-														 handler:^(UIAlertAction * action) {}];
-			[alert addAction:defaultAction];
-			[self presentViewController:alert animated:YES completion:nil];
-			[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-FirstUse"];
-	  }
+			if (@available(iOS 13, *)){
+				[self updateController];
+			} else {
+				UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"This tweak relies on a CC module!"
+													 message:@"To enable or disable ForwardNotifier, you need to use the CC module. We recomend CC support to enable third party modules. This alert and any other that show up on settings will only show up once."
+													 preferredStyle:UIAlertControllerStyleAlert];
+				UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+															 handler:^(UIAlertAction * action) {}];
+				[alert addAction:defaultAction];
+				[self presentViewController:alert animated:YES completion:nil];
+				[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-FirstUse"];
+		  }
+		}
 		((UITableView *)[self.view.subviews objectAtIndex:0]).keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
 }
 
@@ -47,36 +49,42 @@
 		}
     if ([[NSString stringWithFormat:@"%@",value] isEqual:@"3"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"pcspecifier"]) {
 			if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-PCSpecifierWindows"] isEqual:@"1"]) {
-        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform use is advised!"
-                           message:@"Windows SSH support is buggy at the moment. Crossplatform server use is advised."
-                           preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
-                               handler:^(UIAlertAction * action) {}];
-        [alert addAction:defaultAction];
-        [self presentViewController:alert animated:YES completion:nil];
-				[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-PCSpecifierWindows"];
+				if (@available(iOS 13,*)) {} else {
+	        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform use is advised!"
+	                           message:@"Windows SSH support is buggy at the moment. Crossplatform server use is advised."
+	                           preferredStyle:UIAlertControllerStyleAlert];
+	        UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+	                               handler:^(UIAlertAction * action) {}];
+	        [alert addAction:defaultAction];
+	        [self presentViewController:alert animated:YES completion:nil];
+					[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-PCSpecifierWindows"];
+				}
 			}
     } else if ([[NSString stringWithFormat:@"%@",value] isEqual:@"2"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"pcspecifier"]) {
 			if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-PCSpecifieriOS"] isEqual:@"1"]) {
-				UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"iOS only supports SSH"
-													 message:@"Since the crossplatform server uses python3, iOS as a receiver only supports SSH at the moment."
-													 preferredStyle:UIAlertControllerStyleAlert];
-				UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
-															 handler:^(UIAlertAction * action) {}];
-				[alert addAction:defaultAction];
-				[self presentViewController:alert animated:YES completion:nil];
-				[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-PCSpecifieriOS"];
+				if (@available(iOS 13,*)) {} else {
+					UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"iOS only supports SSH"
+														 message:@"Since the crossplatform server uses python3, iOS as a receiver only supports SSH at the moment."
+														 preferredStyle:UIAlertControllerStyleAlert];
+					UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+																 handler:^(UIAlertAction * action) {}];
+					[alert addAction:defaultAction];
+					[self presentViewController:alert animated:YES completion:nil];
+					[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-PCSpecifieriOS"];
+				}
 			}
 		} else if ([[NSString stringWithFormat:@"%@",value] isEqual:@"1"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"methodspecifier"]) {
 			if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-MethodSpecifier"] isEqual:@"1"]) {
-				UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform Server"
-													 message:@"When using the Crossplatform Server you only need to insert the hostname or ip address. There's no need for user, password or port."
-													 preferredStyle:UIAlertControllerStyleAlert];
-				UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
-															 handler:^(UIAlertAction * action) {}];
-				[alert addAction:defaultAction];
-				[self presentViewController:alert animated:YES completion:nil];
-				[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-MethodSpecifier"];
+				if (@available(iOS 13,*)) {} else {
+					UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform Server"
+														 message:@"When using the Crossplatform Server you only need to insert the hostname or ip address. There's no need for user, password or port."
+														 preferredStyle:UIAlertControllerStyleAlert];
+					UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+																 handler:^(UIAlertAction * action) {}];
+					[alert addAction:defaultAction];
+					[self presentViewController:alert animated:YES completion:nil];
+					[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-MethodSpecifier"];
+				}
 			}
 		}
 
@@ -86,27 +94,62 @@
 		}
 }
 
+-(void)updateController {
+	if (@available(iOS 13,*)) {
+		UIImage *iconImage = [UIImage imageNamed:@"IconWelcome" inBundle:[NSBundle bundleForClass:[self class]] compatibleWithTraitCollection:nil];
+    welcomeController = [[OBWelcomeController alloc] initWithTitle:@"ForwardNotifier!" detailText:@"Please, be sure to follow the github instructions carefully and enjoy the tweak!" icon:iconImage];
+
+    [welcomeController addBulletedListItemWithTitle:@"This tweak relies on a CC module!" description:@"To enable or disable ForwardNotifier, you need to use the CC module. We recommend CC support to enable third party modules." image:[UIImage systemImageNamed:@"1.circle.fill"]];
+    [welcomeController addBulletedListItemWithTitle:@"Use of the Crossplatform server is advised" description:@"The use of the crossplatform server is advised, as it brings more features and will have more support. Besides, it only requires the IP or hostname! No username or password is required." image:[UIImage systemImageNamed:@"2.circle.fill"]];
+    [welcomeController addBulletedListItemWithTitle:@"Windows" description:@"If you are using windows, please use the crossplatform server, as SSH on windows is not reliable enough." image:[UIImage systemImageNamed:@"3.circle.fill"]];
+    [welcomeController addBulletedListItemWithTitle:@"iOS" description:@"Using iOS as the receiver only works over SSH at the moment. Crossplatform support for iOS receiver is being researched." image:[UIImage systemImageNamed:@"4.circle.fill"]];
+    [welcomeController addBulletedListItemWithTitle:@"Support" description:@"If you are experiencing bugs, please read the github instructions carefuly, there is a link at the buttom of the preferences page. If you still need help, contact me via the links at the bottom of the preferences page." image:[UIImage systemImageNamed:@"5.circle.fill"]];
+
+		//welcomeController.buttonTray.effectView.effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemChromeMaterial];
+    UIVisualEffectView *effectWelcomeView = [[UIVisualEffectView alloc] initWithFrame:welcomeController.viewIfLoaded.bounds];
+    effectWelcomeView.effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemChromeMaterial];
+    [welcomeController.viewIfLoaded insertSubview:effectWelcomeView atIndex:0];
+    welcomeController.viewIfLoaded.backgroundColor = [UIColor clearColor];
+    OBBoldTrayButton* continueButton = [OBBoldTrayButton buttonWithType:1];
+    [continueButton addTarget:self action:@selector(dismissWelcomeController) forControlEvents:UIControlEventTouchUpInside];
+    [continueButton setTitle:@"Let's Go!" forState:UIControlStateNormal];
+    [continueButton setClipsToBounds:YES];
+    [continueButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [continueButton.layer setCornerRadius:15];
+    [welcomeController.buttonTray addButton:continueButton];
+
+    welcomeController.modalPresentationStyle = UIModalPresentationPageSheet;
+    welcomeController.modalInPresentation = YES;
+    welcomeController.view.tintColor = [UIColor systemBlueColor];
+    [self presentViewController:welcomeController animated:YES completion:nil];
+	}
+}
+
+-(void)dismissWelcomeController { // Say goodbye to your controller. :(
+    [welcomeController dismissViewControllerAnimated:YES completion:nil];
+}
+
 - (void)killall {
-    NSTask *killallSpringBoard = [[NSTask alloc] init];
-    [killallSpringBoard setLaunchPath:@"/usr/bin/killall"];
-    [killallSpringBoard setArguments:@[@"-9", @"SpringBoard"]];
-    [killallSpringBoard launch];
+		NSURL *relaunchURL = [NSURL URLWithString:@"prefs:root=ForwardNotifier"];
+		SBSRelaunchAction *restartAction;
+    restartAction = [NSClassFromString(@"SBSRelaunchAction") actionWithReason:@"RestartRenderServer" options:SBSRelaunchActionOptionsFadeToBlackTransition targetURL:relaunchURL];
+    [[NSClassFromString(@"FBSSystemService") sharedService] sendActions:[NSSet setWithObject:restartAction] withResult:nil];
 }
 
 - (void)paypal {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.paypal.me/greg0109"]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.paypal.me/greg0109"] options:@{} completionHandler:nil];
 }
 
 - (void)openTwitter {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/greg_0109"]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/greg_0109"] options:@{} completionHandler:nil];
 }
 
 - (void)reddit {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.reddit.com/user/greg0109/"]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.reddit.com/user/greg0109/"] options:@{} completionHandler:nil];
 }
 
 - (void)sendEmail {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"mailto:greg.rabago@gmail.com?subject=ForwardNotifier"]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"mailto:greg.rabago@gmail.com?subject=ForwardNotifier"] options:@{} completionHandler:nil];
 }
 
 -(void)testnotif {

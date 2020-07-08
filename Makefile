@@ -1,5 +1,6 @@
-ARCHS = armv7 armv7s arm64 arm64e
+ARCHS = arm64 arm64e
 FINALPACKAGE = 1
+GO_EASY_ON_ME = 1
 
 INSTALL_TARGET_PROCESSES = SpringBoard
 

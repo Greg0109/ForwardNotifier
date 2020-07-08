@@ -1,4 +1,5 @@
-ARCHS = armv7 armv7s arm64 arm64e
+ARCHS = arm64 arm64e
+GO_EASY_ON_ME = 1
 
 include $(THEOS)/makefiles/common.mk
 
@@ -7,7 +8,7 @@ BUNDLE_NAME = ForwardNotifier
 ForwardNotifier_FILES = FNPRootListController.m
 ForwardNotifier_INSTALL_PATH = /Library/PreferenceBundles
 ForwardNotifier_FRAMEWORKS = UIKit
-ForwardNotifier_PRIVATE_FRAMEWORKS = Preferences
+ForwardNotifier_PRIVATE_FRAMEWORKS = Preferences OnBoardingKit
 ForwardNotifier_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/bundle.mk
