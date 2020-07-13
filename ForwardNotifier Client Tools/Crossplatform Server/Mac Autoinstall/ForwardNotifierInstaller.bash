@@ -71,7 +71,7 @@ EOF
 else
 
 	echo "Python script is installed, updating....."
-	sudo rm $serverpath
+	sudo rm ~/ForwardNotifierServer.py
 	wget https://raw.githubusercontent.com/Greg0109/ForwardNotifier/master/ForwardNotifier%20Client%20Tools/Crossplatform%20Server/ForwardNotifierServer.py
 	if [[ $? -ne 0 ]]; then
 		echo "Something went wrong with the download, please make sure your internet connection is on"
