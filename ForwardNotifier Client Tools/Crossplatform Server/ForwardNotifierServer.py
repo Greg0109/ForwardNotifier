@@ -6,6 +6,7 @@ import subprocess
 import base64
 import requests
 import re
+import time
 
 if platform.system() == "Windows":
     from PIL import Image  # convert to ico
@@ -14,7 +15,7 @@ if platform.system() == "Windows":
 
 port = 8000
 
-version = "1.0"
+version = "1.0.1"
 iconpath = {
     "Windows": "/temp/ForwardNotifierIcon",
     "Linux": "/tmp/ForwardNotifierIcon",
@@ -22,14 +23,25 @@ iconpath = {
     "MacOS": "/tmp/ForwardNotifierIcon"
 }
 
+tries = 0
 def checkforupadate():
-    url = "https://gist.githubusercontent.com/Greg0109/f96b24011c7a2a56d29869f70ce271d3/raw/e27b2e2ab498ccc9440d19f11cb1342291ddb380/ForwardNotifierServer.py"
-    r = requests.get(url).text
-    m = re.search(r'version = .+', r)
-    ver = m.group(0).split("=")[1].replace('"', "").replace(" ", "")
-    if ver != version:
-        sendnotif("Update availabe!",
-                  "Run the install script again to update ForwardNotifier", platform.system())
+    global tries
+    try:
+        url = "https://gist.githubusercontent.com/Greg0109/f96b24011c7a2a56d29869f70ce271d3/raw/e27b2e2ab498ccc9440d19f11cb1342291ddb380/ForwardNotifierServer.py"
+        r = requests.get(url).text
+        m = re.search(r'version = .+', r)
+        ver = m.group(0).split("=")[1].replace('"', "").replace(" ", "")
+        if ver != version:
+            sendnotif("Update availabe!",
+                      "Run the install script again to update ForwardNotifier", platform.system())
+    except requests.exceptions.ConnectionError:
+        if tries < 5:
+            print("Couldn't access github. Trying again in 5 seconds.")
+            time.sleep(5)
+            tries += 1
+            checkforupadate()
+        else:
+            print("Couldn't access github. Please check your internet connection or contact the developer.")
 
 
 # send os with the request since it's known by the sender
