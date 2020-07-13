@@ -196,7 +196,7 @@ void pushnotif(BOOL override) {
         }
         NSTask *task = [[NSTask alloc] init];
         [task setLaunchPath:@"/usr/bin/curl"];
-        [task setArguments:@[[NSString stringWithFormat:@"%@:8000",ip],@"-d",command ]];
+        [task setArguments:@[@"-sS",[NSString stringWithFormat:@"%@:8000",ip],@"-d",command ]];
         out = [NSPipe pipe];
         [task setStandardError:out];
         [task launch];
