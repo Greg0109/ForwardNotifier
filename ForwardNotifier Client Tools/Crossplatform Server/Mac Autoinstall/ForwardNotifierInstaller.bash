@@ -8,6 +8,10 @@ if [[ -z $brewinstallation ]]; then
 else
 	echo "Brew is already installed"
 fi
+
+echo "Installing wget..."
+brew install wget
+
 echo "Checking for terminal-notifier installation..."
 terminalnotifierinstallation=$(ls /usr/local/bin | grep terminal-notifier)
 if [[ -z $terminalnotifierinstallation ]]; then
