@@ -27,7 +27,7 @@ tries = 0
 def checkforupadate():
     global tries
     try:
-        url = "https://gist.githubusercontent.com/Greg0109/f96b24011c7a2a56d29869f70ce271d3/raw/e27b2e2ab498ccc9440d19f11cb1342291ddb380/ForwardNotifierServer.py"
+        url = "https://raw.githubusercontent.com/Greg0109/ForwardNotifier/master/ForwardNotifier%20Client%20Tools/Crossplatform%20Server/ForwardNotifierServer.py"
         r = requests.get(url).text
         m = re.search(r'version = .+', r)
         ver = m.group(0).split("=")[1].replace('"', "").replace(" ", "")
