@@ -222,9 +222,8 @@ void pushnotif(BOOL override) {
   message = arg1.content.message;
   bundleID = arg1.sectionID;
   if ([title length] == 0) {
-    //title = [[NSBundle bundleWithIdentifier:@"BundleIdentifier"] objectForInfoDictionaryKey:(id)kCFBundleExecutableKey];
-    NSArray *name = [arg1.sectionID componentsSeparatedByString:@"."];
-    title = [NSString stringWithFormat:@"%@",[name lastObject]];
+    SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
+    title = app.displayName;
   }
   if (![title containsString:@"ForwardNotifier"] && [arg1.date timeIntervalSinceNow] > -2) { //This helps avoid the notifications to get forwarded again after a respring, which makes them avoid respring loops. If notifications are 2 seconds old, then won't get forwarded.
     NSMutableDictionary *applist = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.greg0109.forwardnotifierblacklist"];
