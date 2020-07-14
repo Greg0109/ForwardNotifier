@@ -36,70 +36,72 @@ def checkforupadate():
                       "Run the install script again to update ForwardNotifier", platform.system())
     except requests.exceptions.ConnectionError:
         if tries < 5:
-            print("Couldn't access github. Trying again in 5 seconds.")
+            sendnotif("Couldn't access github", "Trying again in 5 seconds.", platform.system())
             time.sleep(5)
             tries += 1
             checkforupadate()
         else:
-            print("Couldn't access github. Please check your internet connection or contact the developer.")
+            sendnotif("Couldn't access github", "Please check your internet connection or contact the developer.", platform.system())
 
 
 # send os with the request since it's known by the sender
 def sendnotif(Title, Message, OS, icon=None):
     # system = platform.system()
-
-    try:  # Try to decode
-        Title = base64.b64decode(Title.encode("utf-8")).decode("utf-8")
-    except:
-        print("Title is not base64")
-    try:  # Try to decode
-        Message = base64.b64decode(Message.encode("utf-8")).decode("utf-8")
-    except:
-        print("Message is not base64")
-    if icon:
-        print("Theres an icon!")
-        icon = base64.decodebytes(icon.encode("utf-8"))
-        open(iconpath[OS], "wb").write(icon) # send img to correct path
-
-    print("Sending notification:")
-    print("Title:", Title)
-    print("Message:", Message)
-
-    if OS == "Windows":
+    try:
+        try:  # Try to decode
+            Title = base64.b64decode(Title.encode("utf-8")).decode("utf-8")
+        except:
+            print("Title is not base64")
+        try:  # Try to decode
+            Message = base64.b64decode(Message.encode("utf-8")).decode("utf-8")
+        except:
+            print("Message is not base64")
         if icon:
-            # try:  # Try to decode
-            filename = iconpath[OS]
-            img = Image.open(filename)
-            img.save(iconpath[OS] + '.ico', format = 'ICO')
-            toaster.show_toast(Title,
+            print("Theres an icon!")
+            icon = base64.decodebytes(icon.encode("utf-8"))
+            open(iconpath[OS], "wb").write(icon) # send img to correct path
+
+        print("Sending notification:")
+        print("Title:", Title)
+        print("Message:", Message)
+
+        if OS == "Windows":
+            if icon:
+                # try:  # Try to decode
+                filename = iconpath[OS]
+                img = Image.open(filename)
+                img.save(iconpath[OS] + '.ico', format = 'ICO')
+                toaster.show_toast(Title,
+                                    Message,
+                                    icon_path=iconpath[OS] + ".ico",
+                                    duration=5,
+                                    threaded=True)
+                # except:  # icon not base64 aka ignore
+                #     toaster.show_toast(Title,
+                #                        Message,
+                #                        duration=5,
+                #                        threaded=True)
+            else:
+                toaster.show_toast(Title,
                                 Message,
-                                icon_path=iconpath[OS] + ".ico",
                                 duration=5,
                                 threaded=True)
-            # except:  # icon not base64 aka ignore
-            #     toaster.show_toast(Title,
-            #                        Message,
-            #                        duration=5,
-            #                        threaded=True)
-        else:
-            toaster.show_toast(Title,
-                               Message,
-                               duration=5,
-                               threaded=True)
-    elif OS == "Linux":
-        if icon:
-            subprocess.call(
-                ["notify-send", "-i", iconpath[OS], Title, Message])
-        else:
-            subprocess.call(
-                ["notify-send", "-i", "applications-development", Title, Message])
-    elif OS == "Darwin" or OS == "MacOS": # macos
-        if icon:
-            subprocess.call(["/usr/local/bin/terminal-notifier",
-                            "-sound", "pop", "-appIcon", iconpath[OS], "-title", Title, "-message", Message])
-        else:
-            subprocess.call(["/usr/local/bin/terminal-notifier",
-                "-sound", "pop", "-title", Title, "-message", Message])
+        elif OS == "Linux":
+            if icon:
+                subprocess.call(
+                    ["notify-send", "-i", iconpath[OS], Title, Message])
+            else:
+                subprocess.call(
+                    ["notify-send", "-i", "applications-development", Title, Message])
+        elif OS == "Darwin" or OS == "MacOS": # macos
+            if icon:
+                subprocess.call(["/usr/local/bin/terminal-notifier",
+                                "-sound", "pop", "-appIcon", iconpath[OS], "-title", Title, "-message", Message])
+            else:
+                subprocess.call(["/usr/local/bin/terminal-notifier",
+                    "-sound", "pop", "-title", Title, "-message", Message])
+    except:
+        sendnotif("Error", "unknown error while sending notification", platform.system())
 
 
 def checkbody(body):  # checking the body for a post request, wont be a problem since we send it
