@@ -5,6 +5,7 @@
 #import <SpringBoardServices/SBSRestartRenderServerAction.h>
 
 @interface FNPRootListController : PSListController
+@property (nonatomic,retain) NSMutableDictionary *savedSpecifiers;
 @end
 
 typedef struct SBIconImageInfo {

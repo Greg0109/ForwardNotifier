@@ -7,8 +7,14 @@ int __isOSVersionAtLeast(int major, int minor, int patch) { NSOperatingSystemVer
 - (NSArray *)specifiers {
 	if (!_specifiers) {
 		_specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
+		NSArray *chosenIDs = @[@"hide1",@"hide2",@"hide3",@"hide4"];
+		self.savedSpecifiers = (!self.savedSpecifiers) ? [[NSMutableDictionary alloc] init] : self.savedSpecifiers;
+		for(PSSpecifier *specifier in _specifiers) {
+			if ([chosenIDs containsObject:[specifier propertyForKey:@"id"]]) {
+				[self.savedSpecifiers setObject:specifier forKey:[specifier propertyForKey:@"id"]];
+			}
+		}
 	}
-
 	return _specifiers;
 }
 
@@ -29,6 +35,23 @@ int __isOSVersionAtLeast(int major, int minor, int patch) { NSOperatingSystemVer
 		  }
 		}
 		((UITableView *)[self.view.subviews objectAtIndex:0]).keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
+   if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"HideSSH"] isEqual:@"1"]) {
+     [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide1"]] animated:YES];
+		 [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide2"]] animated:YES];
+		 [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide3"]] animated:YES];
+		 [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide4"]] animated:YES];
+   }
+}
+
+-(void)reloadSpecifiers {
+	[super reloadSpecifiers];
+	//This will look the exact same as step 5, where we only check if specifiers need to be removed
+	if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"HideSSH"] isEqual:@"1"]) {
+		[self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide1"]] animated:YES];
+		[self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide2"]] animated:YES];
+		[self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide3"]] animated:YES];
+		[self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide4"]] animated:YES];
+	}
 }
 
 - (id)readPreferenceValue:(PSSpecifier*)specifier {
@@ -74,18 +97,17 @@ int __isOSVersionAtLeast(int major, int minor, int patch) { NSOperatingSystemVer
 				}
 			}
 		} else if ([[NSString stringWithFormat:@"%@",value] isEqual:@"1"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"methodspecifier"]) {
-			if (![[[NSUserDefaults standardUserDefaults] stringForKey:@"ForwardNotifier-MethodSpecifier"] isEqual:@"1"]) {
-				if (@available(iOS 13,*)) {} else {
-					UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Crossplatform Server"
-														 message:@"When using the Crossplatform Server you only need to insert the hostname or ip address. There's no need for user, password or port."
-														 preferredStyle:UIAlertControllerStyleAlert];
-					UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
-																 handler:^(UIAlertAction * action) {}];
-					[alert addAction:defaultAction];
-					[self presentViewController:alert animated:YES completion:nil];
-					[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"ForwardNotifier-MethodSpecifier"];
-				}
-			}
+			[self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide1"]] animated:YES];
+ 		 [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide2"]] animated:YES];
+ 		 [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide3"]] animated:YES];
+ 		 [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide4"]] animated:YES];
+			[[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"HideSSH"];
+		} else if ([[NSString stringWithFormat:@"%@",value] isEqual:@"0"] && [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"methodspecifier"]) {
+			[self insertContiguousSpecifiers:@[self.savedSpecifiers[@"hide1"]] afterSpecifierID:@"hostnameip" animated:YES];
+			[self insertContiguousSpecifiers:@[self.savedSpecifiers[@"hide2"]] afterSpecifierID:@"hide1" animated:YES];
+			[self insertContiguousSpecifiers:@[self.savedSpecifiers[@"hide3"]] afterSpecifierID:@"hide2" animated:YES];
+			[self insertContiguousSpecifiers:@[self.savedSpecifiers[@"hide4"]] afterSpecifierID:@"hide3" animated:YES];
+			[[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"HideSSH"];
 		}
 
 		if ([[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"receiver"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"password"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"chargingenabled"]) {

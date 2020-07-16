@@ -164,15 +164,15 @@
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<false/>
+			<string>PSEditTextCell</string>
+			<key>placeholder</key>
+			<string>IP or Hostaname.local</string>
 			<key>defaults</key>
 			<string>com.greg0109.forwardnotifierprefs</string>
 			<key>key</key>
-			<string>keyauthentication</string>
-			<key>label</key>
-			<string>Use key authentication</string>
+			<string>ip</string>
+			<key>id</key>
+			<string>hostnameip</string>
 			<key>PostNotification</key>
 			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
@@ -185,18 +185,8 @@
 			<string>com.greg0109.forwardnotifierprefs</string>
 			<key>key</key>
 			<string>user</string>
-			<key>PostNotification</key>
-			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSEditTextCell</string>
-			<key>placeholder</key>
-			<string>IP or Hostaname.local</string>
-			<key>defaults</key>
-			<string>com.greg0109.forwardnotifierprefs</string>
-			<key>key</key>
-			<string>ip</string>
+			<key>id</key>
+			<string>hide1</string>
 			<key>PostNotification</key>
 			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
@@ -209,6 +199,8 @@
 			<string>com.greg0109.forwardnotifierprefs</string>
 			<key>key</key>
 			<string>port</string>
+			<key>id</key>
+			<string>hide2</string>
 			<key>PostNotification</key>
 			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
@@ -221,6 +213,24 @@
 			<string>com.greg0109.forwardnotifierprefs</string>
 			<key>key</key>
 			<string>password</string>
+			<key>id</key>
+			<string>hide3</string>
+			<key>PostNotification</key>
+			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.greg0109.forwardnotifierprefs</string>
+			<key>key</key>
+			<string>keyauthentication</string>
+			<key>id</key>
+			<string>hide4</string>
+			<key>label</key>
+			<string>Use key authentication</string>
 			<key>PostNotification</key>
 			<string>com.greg0109.forwardnotifierprefs.settingschanged</string>
 		</dict>
