@@ -15,7 +15,7 @@ if platform.system() == "Windows":
 
 port = 8000
 
-version = "1.0.1"
+version = "1.0.2"
 iconpath = {
     "Windows": "/temp/ForwardNotifierIcon",
     "Linux": "/tmp/ForwardNotifierIcon",
