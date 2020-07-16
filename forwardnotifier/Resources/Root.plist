@@ -180,11 +180,11 @@
 			<key>cell</key>
 			<string>PSEditTextCell</string>
 			<key>placeholder</key>
-			<string>User</string>
+			<string>Port. Leave empty if its default (22)</string>
 			<key>defaults</key>
 			<string>com.greg0109.forwardnotifierprefs</string>
 			<key>key</key>
-			<string>user</string>
+			<string>port</string>
 			<key>id</key>
 			<string>hide1</string>
 			<key>PostNotification</key>
@@ -194,11 +194,11 @@
 			<key>cell</key>
 			<string>PSEditTextCell</string>
 			<key>placeholder</key>
-			<string>Port. Leave empty if its default (22)</string>
+			<string>User</string>
 			<key>defaults</key>
 			<string>com.greg0109.forwardnotifierprefs</string>
 			<key>key</key>
-			<string>port</string>
+			<string>user</string>
 			<key>id</key>
 			<string>hide2</string>
 			<key>PostNotification</key>
