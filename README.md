@@ -45,11 +45,11 @@ Notifications can be disabled when device is unlocked.
 
 To install the crossplatform server, you only need to install the provided Autoinstall packages. These installers will check and install all necessary dependencies for this program to work. **The Crossplatform server will autolaunch on every boot of the system**. Follow the instructions for each specific OS down below:
 
-[MacOS](https://github.com/Greg0109/ForwardNotifier/blob/master/ForwardNotifier%20Client%20Tools/Crossplatform%20Server/Mac%20Autoinstall/ForwardNotifierInstaller): Place the script anywhere you want on your Mac and launch it on terminal, like so "./ForwardNotifierInstaller" (Do not use sudo).
+[MacOS](https://github.com/Greg0109/ForwardNotifier/blob/master/ForwardNotifier%20Client%20Tools/Crossplatform%20Server/Mac%20Autoinstall/ForwardNotifierInstaller.bash): Place the script anywhere you want on your Mac and launch it on terminal, like so "./ForwardNotifierInstaller" (Do not use sudo).
 
 [Windows](https://github.com/Greg0109/ForwardNotifier/blob/master/ForwardNotifier%20Client%20Tools/Crossplatform%20Server/Windows%20Autoinstall/ForwardNotifierSetup.exe): Execute it as administrator as you would any other .exe file
 
-[Linux](https://github.com/Greg0109/ForwardNotifier/blob/master/ForwardNotifier%20Client%20Tools/Crossplatform%20Server/Linux%20Autoinstall/ForwardNotifierInstaller): Place the script anywhere you want on your Linux machine and launch it on terminal, like so "sudo ./ForwardNotifierInstaller" (please, use sudo).
+[Linux](https://github.com/Greg0109/ForwardNotifier/blob/master/ForwardNotifier%20Client%20Tools/Crossplatform%20Server/Linux%20Autoinstall/ForwardNotifierInstaller.bash): Place the script anywhere you want on your Linux machine and launch it on terminal, like so "sudo ./ForwardNotifierInstaller" (please, use sudo).
 
 If there's a "permissions error" while trying to use the MacOS or Linux tool, give the script permissions by using "chmod +x ForwardNotifierInstaller" in terminal on the same directory as the script.
 
