@@ -23,6 +23,7 @@ NSString *pc;
 NSString *title;
 NSString *message;
 NSString *bundleID;
+NSString *appName;
 BOOL locked;
 
 //For the error output
@@ -186,7 +187,7 @@ void pushnotif(BOOL override) {
         title = [title stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
         message = [message stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
         if (pcspecifier == 0) { // Linux
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
+          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\", \"img\": \"%@\", \"appname\": \"%@\"}",titleBase64,messageBase64,iconBase64,appName];
         } else if (pcspecifier == 1) { // MacOS
           command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"MacOS\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
         } else if (pcspecifier == 2) { // iOS
@@ -221,8 +222,9 @@ void pushnotif(BOOL override) {
   title = arg1.content.title;
   message = arg1.content.message;
   bundleID = arg1.sectionID;
+  SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
+  appName = app.displayName;
   if ([title length] == 0) {
-    SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
     title = app.displayName;
   }
   if (![title containsString:@"ForwardNotifier"] && [arg1.date timeIntervalSinceNow] > -2) { //This helps avoid the notifications to get forwarded again after a respring, which makes them avoid respring loops. If notifications are 2 seconds old, then won't get forwarded.
