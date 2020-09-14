@@ -9,19 +9,22 @@ BOOL lockstateenabled;
 int pcspecifier;
 
 //Settings
-int methodspecifier = 1;
+int methodspecifier;
 BOOL keyauthentication;
 NSString *user;
 NSString *ip;
 NSString *port;
 NSString *password;
 NSString *command;
+NSString *finalCommand;
 NSArray *arguments;
 
 //Notifications
 NSString *pc;
 NSString *title;
+NSMutableString *finalTitle;
 NSString *message;
+NSMutableString *finalMessage;
 NSString *bundleID;
 NSString *appName;
 BOOL locked;
@@ -37,7 +40,7 @@ static void loadPrefs() {
   lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
   pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
 
-  methodspecifier = prefs[@"methodspecifier"] ? [prefs[@"methodspecifier"] intValue] : 1;
+  methodspecifier = prefs[@"methodspecifier"] ? [prefs[@"methodspecifier"] intValue] : 0;
   keyauthentication = prefs[@"keyauthentication"] ? [prefs[@"keyauthentication"] boolValue] : NO;
   user = prefs[@"user"] && !([prefs[@"user"] isEqualToString:@""]) ? [prefs[@"user"] stringValue] : @"user";
   ip = prefs[@"ip"] && !([prefs[@"ip"] isEqualToString:@""]) ? [prefs[@"ip"] stringValue] : @"ip";
@@ -106,8 +109,30 @@ BOOL isItLocked() {
   return locked;
 }
 
+void sanitizeText() { //Thanks Tom for the idea of using \ everywhere :P
+  finalTitle = [@"" mutableCopy];
+  for (int i=0; i<title.length; i++) {
+      NSString *charSelected = [title substringWithRange:NSMakeRange(i, 1)];
+      if ([charSelected isEqualToString:@" "]) {
+          charSelected = @" ";
+      } else {
+        charSelected = [NSString stringWithFormat:@"\\%@",charSelected];
+      }
+      [finalTitle appendString:charSelected];
+  }
+  finalMessage = [@"" mutableCopy];
+  for (int i=0; i<message.length; i++) {
+      NSString *charSelected = [message substringWithRange:NSMakeRange(i, 1)];
+      if ([charSelected isEqualToString:@" "]) {
+          charSelected = @" ";
+      } else {
+        charSelected = [NSString stringWithFormat:@"\\%@",charSelected];
+      }
+      [finalMessage appendString:charSelected];
+  }
+}
+
 void pushnotif(BOOL override) {
-  methodspecifier = 1;
   if (!override) {
     isItLocked();
   } else {
@@ -118,14 +143,20 @@ void pushnotif(BOOL override) {
       dispatch_queue_t sendnotif = dispatch_queue_create("Send Notif", NULL);
       dispatch_async(sendnotif, ^{
         pc = [NSString stringWithFormat:@"%@@%@",user,ip];
+        sanitizeText();
         if (pcspecifier == 0) { // Linux
-          command = [NSString stringWithFormat:@"notify-send -i applications-development \"%@\" \"%@\"",title,message];
+          finalCommand = [NSString stringWithFormat:@"\"$(echo %@)\" \"$(echo %@)\"", finalTitle, finalMessage];
+          command = [NSString stringWithFormat:@"notify-send -i applications-development %@",finalCommand];
+          NSLog(@"ForwardNotifier: %@", command);
         } else if (pcspecifier == 1) { // MacOS
-          command = [NSString stringWithFormat:@"/usr/local/bin/terminal-notifier -sound pop -title \"%@\" -message \"%@\"",title,message];
+          finalCommand = [NSString stringWithFormat:@"-title \"$(echo %@)\" -message \"$(echo %@)\"", finalTitle, finalMessage];
+          command = [NSString stringWithFormat:@"/usr/local/bin/terminal-notifier -sound pop %@",finalCommand];
         } else if (pcspecifier == 2) { // iOS
-          command = [NSString stringWithFormat:@"ForwardNotifierReceiver \"%@\" \"%@\"",title,message];
+          finalCommand = [NSString stringWithFormat:@"\"$(echo %@)\" \"$(echo %@)\"", finalTitle, finalMessage];
+          command = [NSString stringWithFormat:@"ForwardNotifierReceiver %@",finalCommand];
         } else if (pcspecifier == 3) { // Windows
-          command = [NSString stringWithFormat:@"ForwardNotifierReceiver -title \"%@\" -message \"%@\"",title,message];
+          finalCommand = [NSString stringWithFormat:@"-title \"$(echo %@)\" -message \"$(echo %@)\"", finalTitle, finalMessage];
+          command = [NSString stringWithFormat:@"ForwardNotifierReceiver %@",finalCommand];
         }
         if (keyauthentication) {
           if ([port isEqual:@"22"]) {

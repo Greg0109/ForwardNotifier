@@ -41,6 +41,15 @@ int __isOSVersionAtLeast(int major, int minor, int patch) { NSOperatingSystemVer
 		 [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide3"]] animated:YES];
 		 [self removeContiguousSpecifiers:@[self.savedSpecifiers[@"hide4"]] animated:YES];
    }
+	 if ([[[NSUserDefaults standardUserDefaults] stringForKey:@"HideSSH"] isEqual:@"0"]) {
+		 UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Possible exploit warning while using SSH"
+ 											 message:@"While the text has been sanitized to avoid possible execution of commands, the text is sent 'as is' and this presents a possible security risk.\nIt is advised to use the Crossplatform Server as it's more secure"
+ 											 preferredStyle:UIAlertControllerStyleAlert];
+ 		UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+ 													 handler:^(UIAlertAction * action) {}];
+ 		[alert addAction:defaultAction];
+ 		[self presentViewController:alert animated:YES completion:nil];
+   }
 }
 
 -(void)reloadSpecifiers {
@@ -108,6 +117,13 @@ int __isOSVersionAtLeast(int major, int minor, int patch) { NSOperatingSystemVer
 			[self insertContiguousSpecifiers:@[self.savedSpecifiers[@"hide3"]] afterSpecifierID:@"hide2" animated:YES];
 			[self insertContiguousSpecifiers:@[self.savedSpecifiers[@"hide4"]] afterSpecifierID:@"hide3" animated:YES];
 			[[NSUserDefaults standardUserDefaults] setBool:FALSE forKey:@"HideSSH"];
+			UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Possible exploit warning while using SSH"
+												 message:@"While the text has been sanitized to avoid possible execution of commands, the text is sent 'as is' and this presents a possible security risk.\nIt is advised to use the Crossplatform Server as it's more secure"
+												 preferredStyle:UIAlertControllerStyleAlert];
+			UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+														 handler:^(UIAlertAction * action) {}];
+			[alert addAction:defaultAction];
+			[self presentViewController:alert animated:YES completion:nil];
 		}
 
 		if ([[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"receiver"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"password"] || [[NSString stringWithFormat:@"%@",specifier.properties[@"key"]] isEqual:@"chargingenabled"]) {

@@ -7,10 +7,10 @@
   /home/glith/theos/vendor/include/Preferences/PSViewController.h \
   /home/glith/theos/vendor/include/Preferences/PSSpecifier.h \
   /home/glith/theos/vendor/include/Preferences/PSTableCell.h \
-  /home/glith/theos/vendor/include/AppList/AppList.h \
-  /home/glith/theos/vendor/include/AppList/ALApplicationList.h \
-  /home/glith/theos/vendor/include/AppList/ALApplicationTableDataSource.h \
-  /home/glith/theos/vendor/include/AppList/ALValueCell.h \
+  /home/glith/theos/include/AppList/AppList.h \
+  /home/glith/theos/include/AppList/ALApplicationList.h \
+  /home/glith/theos/include/AppList/ALApplicationTableDataSource.h \
+  /home/glith/theos/include/AppList/ALValueCell.h \
   /home/glith/theos/vendor/include/FrontBoardServices/FBSSystemService.h \
   /home/glith/theos/vendor/include/SpringBoardServices/SBSRestartRenderServerAction.h \
   /home/glith/theos/vendor/include/SpringBoardServices/SBSRelaunchAction.h \
@@ -37,13 +37,13 @@ FNPRootListController.h:
 
 /home/glith/theos/vendor/include/Preferences/PSTableCell.h:
 
-/home/glith/theos/vendor/include/AppList/AppList.h:
+/home/glith/theos/include/AppList/AppList.h:
 
-/home/glith/theos/vendor/include/AppList/ALApplicationList.h:
+/home/glith/theos/include/AppList/ALApplicationList.h:
 
-/home/glith/theos/vendor/include/AppList/ALApplicationTableDataSource.h:
+/home/glith/theos/include/AppList/ALApplicationTableDataSource.h:
 
-/home/glith/theos/vendor/include/AppList/ALValueCell.h:
+/home/glith/theos/include/AppList/ALValueCell.h:
 
 /home/glith/theos/vendor/include/FrontBoardServices/FBSSystemService.h:
 

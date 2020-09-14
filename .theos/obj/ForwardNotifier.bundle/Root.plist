@@ -135,6 +135,8 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Notifier Settings</string>
+			<key>footerText</key>
+			<string>If you are using key authentication, make sure the key works before activating. This tweak has been tested with keys in the .pem format</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -147,10 +149,12 @@
 			<string>methodspecifier</string>
 			<key>validValues</key>
         	<array>
+				<integer>0</integer>
 				<integer>1</integer>
 			</array>
 			<key>validTitles</key>
 			<array>
+				<string>SSH</string>
 				<string>Crossplatform Server</string>
 			</array>
 			<key>alignment</key>
