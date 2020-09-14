@@ -21,7 +21,7 @@ version = "1.0.4"
 iconpath = {
     "Windows": "/temp/ForwardNotifierIcon",
     "Linux": "/tmp/ForwardNotifierIcon",
-    "Darwin": "/tmp/ForwardNotifierIcon", # macos
+    "Darwin": "/tmp/ForwardNotifierIcon", #mac
     "MacOS": "/tmp/ForwardNotifierIcon"
 }
 
