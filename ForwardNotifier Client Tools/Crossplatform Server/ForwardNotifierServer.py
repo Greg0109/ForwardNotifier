@@ -15,7 +15,7 @@ if platform.system() == "Windows":
 
 port = 8000
 
-version = "1.0.2"
+version = "1.0.3"
 iconpath = {
     "Windows": "/temp/ForwardNotifierIcon",
     "Linux": "/tmp/ForwardNotifierIcon",
@@ -45,7 +45,7 @@ def checkforupadate():
 
 
 # send os with the request since it's known by the sender
-def sendnotif(Title, Message, OS, icon=None):
+def sendnotif(Title, Message, OS, appname, icon=None):
     # system = platform.system()
     try:
         try:  # Try to decode
@@ -59,11 +59,16 @@ def sendnotif(Title, Message, OS, icon=None):
         if icon:
             print("Theres an icon!")
             icon = base64.decodebytes(icon.encode("utf-8"))
-            open(iconpath[OS], "wb").write(icon) # send img to correct path
+            if OS == "Linux":
+                imageFile = "/tmp/"+appname
+                open(imageFile, "wb").write(icon)
+            else:
+                open(iconpath[OS], "wb").write(icon) # send img to correct path
 
         print("Sending notification:")
-        print("Title:", Title)
-        print("Message:", Message)
+        print("Title: ", Title)
+        print("Message: ", Message)
+        print("App Name: ", appname)
 
         if OS == "Windows":
             if icon:
@@ -88,8 +93,9 @@ def sendnotif(Title, Message, OS, icon=None):
                                 threaded=True)
         elif OS == "Linux":
             if icon:
+                imageFile = "/tmp/"+appname
                 subprocess.call(
-                    ["notify-send", "-i", iconpath[OS], Title, Message])
+                    ["notify-send", "-i", imageFile, Title, Message])
             else:
                 subprocess.call(
                     ["notify-send", "-i", "applications-development", Title, Message])
@@ -175,8 +181,12 @@ class S(BaseHTTPRequestHandler):
 
                 body = json.loads(body)
                 if "img" in  body:
-                    sendnotif(body["Title"], body["Message"],
-                              body["OS"], body["img"])  # sends the body
+                    if "appname" in body:
+                        sendnotif(body["Title"], body["Message"],
+                                  body["OS"], body["appname"], body["img"])  # sends the body
+                    else:
+                        sendnotif(body["Title"], body["Message"],
+                                  body["OS"], body["img"])
                 else:
                     sendnotif(body["Title"], body["Message"],
                               body["OS"])  # sends the body
