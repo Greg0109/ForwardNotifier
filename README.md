@@ -11,7 +11,7 @@ Up uptil now it only worked using SSH, but now, I am introducing the crossplatfo
 **If you are a beginner, I suggest you use the Crossplatform Server, it's much more user friendly. The SSH tutorial and Crossplatform tutorial are down below.**
 
 # SSH Setup for the Receiver
-
+## DO NOT USE THE SSH OPTION IF YOU STILL HAVE A VERSION THAT SUPPORTS IT. IT HAS A MAJOR BUG THAT COULD BE USED TO RUN TERMINAL COMMANDS ON YOUR COMPUTER
 ### MacOS
 
 For MacOS you need a tool called “terminal-notifier”. It’s free and there are several tutorials on how to install it. Like this [one](https://brewinstall.org/install-terminal-notifier-on-mac-with-brew/)

@@ -3,7 +3,7 @@ Name: ForwardNotifier
 Depends: mobilesubstrate, sshpass, openssh, applist, preferenceloader, curl
 Conflict: com.yourepo.greg0109.forwardnotifier8
 Replaces: com.yourepo.greg0109.forwardnotifier8
-Version: 1.4.1
+Version: 1.4.2
 Architecture: iphoneos-arm
 Description: Forward Notifications to your PC!
 Maintainer: Greg0109

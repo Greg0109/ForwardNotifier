@@ -9,7 +9,7 @@ BOOL lockstateenabled;
 int pcspecifier;
 
 //Settings
-int methodspecifier;
+int methodspecifier = 1;
 BOOL keyauthentication;
 NSString *user;
 NSString *ip;
@@ -37,7 +37,7 @@ static void loadPrefs() {
   lockstateenabled = prefs[@"lockstateenabled"] ? [prefs[@"lockstateenabled"] boolValue] : YES;
   pcspecifier = prefs[@"pcspecifier"] ? [prefs[@"pcspecifier"] intValue] : 0;
 
-  methodspecifier = prefs[@"methodspecifier"] ? [prefs[@"methodspecifier"] intValue] : 0;
+  methodspecifier = prefs[@"methodspecifier"] ? [prefs[@"methodspecifier"] intValue] : 1;
   keyauthentication = prefs[@"keyauthentication"] ? [prefs[@"keyauthentication"] boolValue] : NO;
   user = prefs[@"user"] && !([prefs[@"user"] isEqualToString:@""]) ? [prefs[@"user"] stringValue] : @"user";
   ip = prefs[@"ip"] && !([prefs[@"ip"] isEqualToString:@""]) ? [prefs[@"ip"] stringValue] : @"ip";
@@ -107,6 +107,7 @@ BOOL isItLocked() {
 }
 
 void pushnotif(BOOL override) {
+  methodspecifier = 1;
   if (!override) {
     isItLocked();
   } else {
