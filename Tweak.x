@@ -256,16 +256,18 @@ void pushnotif(BOOL override) {
   bundleID = arg1.sectionID;
   SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
   appName = app.displayName;
-  if ([title length] == 0) {
-    title = app.displayName;
-  }
-  if (![title containsString:@"ForwardNotifier"] && [arg1.date timeIntervalSinceNow] > -2) { //This helps avoid the notifications to get forwarded again after a respring, which makes them avoid respring loops. If notifications are 2 seconds old, then won't get forwarded.
-    NSMutableDictionary *applist = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.greg0109.forwardnotifierblacklist"];
-  	if (![applist valueForKey:arg1.sectionID] || [[NSString stringWithFormat:@"%@",[applist valueForKey:arg1.sectionID]] isEqual:@"0"]) {
-      pushnotif(FALSE);
+  if (([title length] != 0) && ([message length] != 0)) {
+    if ([title length] == 0) {
+      title = app.displayName;
     }
-  } else if ([title isEqualToString:@"ForwardNotifier Test"]) {
-    pushnotif(TRUE);
+    if (![title containsString:@"ForwardNotifier"] && [arg1.date timeIntervalSinceNow] > -2) { //This helps avoid the notifications to get forwarded again after a respring, which makes them avoid respring loops. If notifications are 2 seconds old, then won't get forwarded.
+      NSMutableDictionary *applist = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.greg0109.forwardnotifierblacklist"];
+      if (![applist valueForKey:arg1.sectionID] || [[NSString stringWithFormat:@"%@",[applist valueForKey:arg1.sectionID]] isEqual:@"0"]) {
+        pushnotif(FALSE);
+      }
+    } else if ([title isEqualToString:@"ForwardNotifier Test"]) {
+      pushnotif(TRUE);
+    }
   }
 }
 %end
