@@ -256,7 +256,7 @@ void pushnotif(BOOL override) {
   bundleID = arg1.sectionID;
   SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];
   appName = app.displayName;
-  if (([title length] != 0) && ([message length] != 0)) {
+  if (([title length] != 0) || ([message length] != 0)) {
     if ([title length] == 0) {
       title = app.displayName;
     }
