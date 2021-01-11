@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
+import os
 import json
 import platform
 import subprocess
@@ -7,11 +8,14 @@ import base64
 import requests
 import re
 import time
+import pystray
+import traceback
 
-if platform.system() == "Windows":
-    from PIL import Image  # convert to ico
-    from win10toast import ToastNotifier
-    toaster = ToastNotifier()
+# Instead of using cross-platform pystray for notifications,
+# on windows will use powershell to generate richer popups
+USE_POWERSHELL=True
+
+tray = None
 
 port = 8000
 
@@ -19,7 +23,7 @@ forwardnotifiericon = "iVBORw0KGgoAAAANSUhEUgAAADoAAAA6CAYAAADhu0ooAAASJXpUWHRSY
 
 version = "1.0.4"
 iconpath = {
-    "Windows": "/temp/ForwardNotifierIcon",
+        "Windows": "c:/temp/ForwardNotifierIcon",
     "Linux": "/tmp/ForwardNotifierIcon",
     "Darwin": "/tmp/ForwardNotifierIcon", #mac
     "MacOS": "/tmp/ForwardNotifierIcon"
@@ -34,82 +38,133 @@ def checkforupadate():
         m = re.search(r'version = .+', r)
         ver = m.group(0).split("=")[1].replace('"', "").replace(" ", "")
         if ver != version:
+            print("Update available! %s -> %s" % (version, ver))
             sendnotif("Update availabe!",
-                      "Run the install script again to update ForwardNotifier", platform.system(), "ForwardNotifier", forwardnotifiericon)
+                      "Run the install script again to update ForwardNotifier", "ForwardNotifier", forwardnotifiericon)
     except requests.exceptions.ConnectionError:
         if tries < 5:
-            sendnotif("Couldn't access github", "Trying again in 5 seconds.", platform.system(), "ForwardNotifier", forwardnotifiericon)
+            sendnotif("Couldn't access github", "Trying again in 5 seconds.", "ForwardNotifier", forwardnotifiericon)
             time.sleep(5)
             tries += 1
             checkforupadate()
         else:
-            sendnotif("Couldn't access github", "Please check your internet connection or contact the developer.", platform.system(), "ForwardNotifier", forwardnotifiericon)
+            sendnotif("Couldn't access github", "Please check your internet connection or contact the developer.", "ForwardNotifier", forwardnotifiericon)
 
+def toastps(title, message, iconpath=None, appname="ForwardNotifier"):
+    """ Uses powershell to send notifications on windows 10, which gives more control over the display """
+
+    template = """
+[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+[Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+
+$APP_ID = '{appid}'
+
+$template = @"
+<toast activationType="protocol" launch="" duration="short">
+    <visual>
+        <binding template="ToastGeneric">
+            {imagestr}
+            <text><![CDATA[{title}]]></text>
+            <text><![CDATA[{msg}]]></text>
+        </binding>
+    </visual>
+        <audio silent="true" />
+</toast>
+"@
+
+$xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+$xml.LoadXml($template)
+$toast = New-Object Windows.UI.Notifications.ToastNotification $xml
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($APP_ID).Show($toast)
+    """ 
+    import tempfile
+    tmp_icon = False
+    if iconpath is not None:
+        if not isinstance(iconpath, str):
+            tmp_icon = True
+            icon = iconpath
+            fd, iconpath = tempfile.mkstemp(suffix=".png")
+            os.close(fd)
+            icon.save(iconpath)
+            
+        image_str = '<image placement="appLogoOverride" src="{icon}" />'.format(icon=iconpath)
+    else:
+        image_str = ''
+
+    fd, psfilename = tempfile.mkstemp(suffix='.ps1')
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8-sig') as psfile:
+            psfile.write(template.format(appid=appname, title=title, msg=message, imagestr=image_str))
+        res = subprocess.run([
+            "PowerShell", 
+            "-ExecutionPolicy", "Bypass", 
+            "-File", psfilename
+            ], capture_output=True)
+    finally:
+        os.remove(psfilename)
+        # We can't immediately delete the temp icon file or it doesn't work, so wait a couple seconds just to be safe
+        if tmp_icon:
+            def delayremove(path):
+                import time
+                time.sleep(3)
+                os.remove(path)
+            threading.Thread(target=delayremove, args=iconpath,)
 
 # send os with the request since it's known by the sender
-def sendnotif(Title, Message, OS, appname=None, icon=None):
-    # system = platform.system()
+def sendnotif(Title, Message, appname="unknown", icon=None, subtitle=None):
     try:
         try:  # Try to decode
             Title = base64.b64decode(Title.encode("utf-8")).decode("utf-8")
         except:
-            print("Title is not base64")
+            pass
+            #print("Title is not base64")
         try:  # Try to decode
             Message = base64.b64decode(Message.encode("utf-8")).decode("utf-8")
         except:
-            print("Message is not base64")
+            pass
+            #print("Message is not base64")
         if icon:
-            print("Theres an icon!")
-            icon = base64.decodebytes(icon.encode("utf-8"))
-            if OS == "Linux":
-                imageFile = "/tmp/"+appname
-                open(imageFile, "wb").write(icon)
-            else:
-                open(iconpath[OS], "wb").write(icon) # send img to correct path
+            #print("Theres an icon!")
+            try:
+                icon = create_image(icon)
+            except:
+                print("Exception decoding icon")
+                icon = None
 
-        print("Sending notification:")
-        print("Title: ", Title)
-        print("Message: ", Message)
-        print("App Name: ", appname)
+        if appname == "unknown":
+            appname = None
+        if subtitle == "(null)":
+            subtitle = None
 
-        if OS == "Windows":
+        if appname == "Messages":
+            if subtitle is not None:
+                appname = subtitle
+        elif appname is not None:
+            if subtitle is not None:
+                Title = subtitle+": "+Title
+        elif subtitle is not None:
+            appname = subtitle
+
+        print("[%s] %s: %s" % (appname, Title, Message))
+
+        if len(Message) > 256:
+            Message = Message[0:250]+"..."
+
+        if USE_POWERSHELL and platform.system() == "Windows":
+            toastps(Title, Message, icon, appname)
+        else:
             if icon:
-                # try:  # Try to decode
-                filename = iconpath[OS]
-                img = Image.open(filename)
-                img.save(iconpath[OS] + '.ico', format = 'ICO')
-                toaster.show_toast(Title,
-                                    Message,
-                                    icon_path=iconpath[OS] + ".ico",
-                                    duration=5,
-                                    threaded=True)
-                # except:  # icon not base64 aka ignore
-                #     toaster.show_toast(Title,
-                #                        Message,
-                #                        duration=5,
-                #                        threaded=True)
-            else:
-                toaster.show_toast(Title,
-                                Message,
-                                duration=5,
-                                threaded=True)
-        elif OS == "Linux":
-            if icon:
-                imageFile = "/tmp/"+appname
-                subprocess.call(
-                    ["notify-send", "-i", imageFile, Title, Message])
-            else:
-                subprocess.call(
-                    ["notify-send", "-i", "applications-development", Title, Message])
-        elif OS == "Darwin" or OS == "MacOS": # macos
-            if icon:
-                subprocess.call(["/usr/local/bin/terminal-notifier",
-                                "-sound", "pop", "-appIcon", iconpath[OS], "-title", Title, "-message", Message])
-            else:
-                subprocess.call(["/usr/local/bin/terminal-notifier",
-                    "-sound", "pop", "-title", Title, "-message", Message])
+                tray.icon = icon
+            if appname:
+                Title = "["+appname+"] "+Title
+
+            tray.notify(Message, Title)
+            tray.icon = create_image(forwardnotifiericon)
     except:
-        sendnotif("Error", "unknown error while sending notification", platform.system())
+        traceback.print_exc()
+        if Title != "Error":    # prevent endless loops
+            sendnotif("Error", "unknown error while sending notification")
 
 
 def checkbody(body):  # checking the body for a post request, wont be a problem since we send it
@@ -125,9 +180,6 @@ def checkbody(body):  # checking the body for a post request, wont be a problem 
         if "Message" not in body:
             return [False, "No 'Message' in body"]
 
-        if "OS" not in body:
-            return [False, "No 'OS' in body"]
-
         if "img" in body:
             try:
                 base64.decodebytes(body["img"].encode("utf-8"))
@@ -141,6 +193,9 @@ def checkbody(body):  # checking the body for a post request, wont be a problem 
 
 
 class S(BaseHTTPRequestHandler):
+    def log_message(msg, *args):
+        pass
+
     def send_res(self, args, code=200, Success=True):
 
         self.send_response(code)
@@ -151,7 +206,7 @@ class S(BaseHTTPRequestHandler):
             "Success": Success,
             "value": args
         }
-        print("Sending: ", json.dumps(out).encode('utf-8'))
+#        print("Sending: ", json.dumps(out).encode('utf-8'))
         self.wfile.write(json.dumps(out).encode('utf-8'))
 
     def do_GET(self):
@@ -168,30 +223,28 @@ class S(BaseHTTPRequestHandler):
         # <--- Gets the data itself
         post_data = self.rfile.read(content_length)
         # print(json.loads(post_data.decode('utf-8')))
-        print("\nPath:", str(self.path),
-              "\nHeaders:\n" + str(self.headers))
-        print(content_length)
+#        print("\nPath:", str(self.path),
+#              "\nHeaders:\n" + str(self.headers))
+#        print(content_length)
         if content_length > 0:
             try:
                 body = post_data.decode('utf-8')
-                print("Body:\n" + post_data.decode('utf-8'), "\n")
+#                print("Body:\n" + post_data.decode('utf-8'), "\n")
             except UnicodeEncodeError as e:
                 print("ForwardNotifierReciver Error:", e)
                 sendnotif("ForwardNotifierReciver Error:",
-                          "invalid characters", platform.system())
+                          "invalid characters")
             if checkbody(body)[0] == True:  # all good
 
                 body = json.loads(body)
-                if "img" in  body:
-                    if "appname" in body:
-                        sendnotif(body["Title"], body["Message"],
-                                  body["OS"], body["appname"], body["img"])  # sends the body
-                    else:
-                        sendnotif(body["Title"], body["Message"],
-                                  body["OS"], body["img"])
-                else:
-                    sendnotif(body["Title"], body["Message"],
-                              body["OS"])  # sends the body
+                subtitle = img = appname = None
+                if "subtitle" in body:
+                    subtitle = body['subtitle']
+                if "appname" in body:
+                    appname = body['appname']
+                if "img" in body:
+                    img = body['img']
+                sendnotif(body["Title"], body["Message"], subtitle=subtitle, appname=appname, icon=img)
 
                 self.send_res("Sent!")
 
@@ -217,11 +270,27 @@ def run(server_class=HTTPServer, handler_class=S, port=port):
     httpd.server_close()
     print('\nStopping httpd...')
 
+def create_image(base64data):
+    """ Decode the forward notifier icon and return a PIL image """
+    icondata = base64.decodebytes(base64data.encode("utf-8"))
+    from PIL import Image, ImageDraw
+    import io
+    return Image.open(io.BytesIO(icondata))
+
+def getmenu():
+    """ Dynamically generate system tray menu (so it can be modified on the fly) """
+    menu = []
+    menu.append(pystray.MenuItem('Exit', lambda ii, it: ii.stop()))
+    return menu
 
 if __name__ == '__main__':
     from sys import argv
 
+    tray = pystray.Icon('ForwardNotifier', create_image(forwardnotifiericon), title="ForwardNotifier", menu=pystray.Menu(getmenu))
+
     if len(argv) == 2:
         run(port=int(argv[1]))
     else:
-        run()
+        import threading
+        th = threading.Thread(target=run, daemon=True).start()
+        tray.run()
