@@ -22,6 +22,7 @@ NSArray *arguments;
 //Notifications
 NSString *pc;
 NSString *title;
+NSString *subtitle;
 NSMutableString *finalTitle;
 NSString *message;
 NSMutableString *finalMessage;
@@ -88,6 +89,7 @@ void testnotif(NSString *titletest, NSString *messagetest) {
   BBBulletin *bulletin = [[%c(BBBulletin) alloc] init];
 
   bulletin.title = titletest;
+  bulletin.subtitle = @"sample subtitle";
   bulletin.message = messagetest;
   bulletin.sectionID = @"com.apple.Preferences";
   bulletin.bulletinID = [[NSProcessInfo processInfo] globallyUniqueString];
@@ -218,15 +220,8 @@ void pushnotif(BOOL override) {
       dispatch_async(sendnotif, ^{
         title = [title stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
         message = [message stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
-        if (pcspecifier == 0) { // Linux
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Linux\", \"img\": \"%@\", \"appname\": \"%@\"}",titleBase64,messageBase64,iconBase64,appName];
-        } else if (pcspecifier == 1) { // MacOS
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"MacOS\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
-        } else if (pcspecifier == 2) { // iOS
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"iOS\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
-        } else if (pcspecifier == 3) { // Windows
-          command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"OS\": \"Windows\", \"img\": \"%@\"}",titleBase64,messageBase64,iconBase64];
-        }
+        subtitle = [subtitle stringByReplacingOccurrencesOfString:@"\"" withString:@"\\""\""];
+        command = [NSString stringWithFormat:@"{\"Title\": \"%@\", \"Message\": \"%@\", \"img\": \"%@\", \"appname\": \"%@\", \"subtitle\": \"%@\"}",titleBase64,messageBase64,iconBase64,appName,subtitle];
         NSTask *task = [[NSTask alloc] init];
         [task setLaunchPath:@"/usr/bin/curl"];
         [task setArguments:@[@"-sS",[NSString stringWithFormat:@"%@:8000",ip],@"-d",command ]];
@@ -252,6 +247,7 @@ void pushnotif(BOOL override) {
 -(void)publishBulletin:(BBBulletin *)arg1 destinations:(unsigned long long)arg2 {
   %orig;
   title = arg1.content.title;
+  subtitle = arg1.content.subtitle;
   message = arg1.content.message;
   bundleID = arg1.sectionID;
   SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:bundleID];

@@ -35,6 +35,7 @@
 @interface BBContent : NSObject
 @property (nonatomic,retain) NSString * message;
 @property (nonatomic,retain) NSString * title;
+@property (nonatomic,retain) NSString * subtitle;
 @end
 
 @interface BBSectionIcon : NSObject
@@ -43,6 +44,7 @@
 @interface BBBulletin : NSObject
 @property (nonatomic,retain) NSString * message;
 @property (nonatomic,retain) NSString * title;
+@property (nonatomic,retain) NSString * subtitle;
 @property (nonatomic,retain) NSString * sectionID;
 @property (nonatomic,retain) BBSectionIcon * icon;
 @property (nonatomic,retain) NSString * bulletinID;
