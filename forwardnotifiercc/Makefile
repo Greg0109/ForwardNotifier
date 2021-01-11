@@ -1,9 +1,10 @@
-ARCHS = arm64 arm64e
+ARCHS = arm64 #arm64e
 GO_EASY_ON_ME = 1
 
 include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = ForwardNotifierCC
+ForwardNotifierCC_FRAMEWORKS = Foundation UIKit
 ForwardNotifierCC_BUNDLE_EXTENSION = bundle
 ForwardNotifierCC_FILES = ForwardNotifierCC.m
 ForwardNotifierCC_PRIVATE_FRAMEWORKS = ControlCenterUIKit
