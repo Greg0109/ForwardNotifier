@@ -66,7 +66,11 @@ def sendnotif(Title, Message, OS, appname=None, icon=None):
                 open(imageFile, "wb").write(icon)
             else:
                 open(iconpath[OS], "wb").write(icon) # send img to correct path
-
+        
+       if str(Message) == "(null)":
+            print("Cancelled notification (null content)")
+            return
+        
         print("Sending notification:")
         print("Title: ", Title)
         print("Message: ", Message)
